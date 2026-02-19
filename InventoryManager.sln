@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryManager.API", "InventoryManager.API\InventoryManager.API.csproj", "{AAE27966-D6CB-4131-8BA5-1A94C52ED323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryManager.Domain", "InventoryManager.Domain\InventoryManager.Domain.csproj", "{86985C3F-943F-4FBC-90B8-36FE19978FF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AAE27966-D6CB-4131-8BA5-1A94C52ED323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAE27966-D6CB-4131-8BA5-1A94C52ED323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAE27966-D6CB-4131-8BA5-1A94C52ED323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAE27966-D6CB-4131-8BA5-1A94C52ED323}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86985C3F-943F-4FBC-90B8-36FE19978FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86985C3F-943F-4FBC-90B8-36FE19978FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86985C3F-943F-4FBC-90B8-36FE19978FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86985C3F-943F-4FBC-90B8-36FE19978FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
