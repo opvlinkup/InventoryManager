@@ -7,4 +7,6 @@ public class Like
 
     public Guid ItemId { get; set; }
     public Item Item { get; set; } = null!;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -1,9 +1,9 @@
 ﻿namespace InventoryManager.Domain.Models;
 
-public class Category
+public class Permission
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;
-    public ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
-    
+
+    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }

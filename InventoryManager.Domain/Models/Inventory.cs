@@ -37,6 +37,5 @@ public class Inventory
     public ICollection<InventoryWriteAccess> InventoryWriteAccesses { get; set; } = new List<InventoryWriteAccess>();
     public ICollection<FieldMetadata> FieldDefinitions { get; set; } = new List<FieldMetadata>();
     public ICollection<CustomIdPart> CustomIdParts { get; set; } = new List<CustomIdPart>();
-    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<InventoryTag> Tags { get; set; } = new List<InventoryTag>();
 }

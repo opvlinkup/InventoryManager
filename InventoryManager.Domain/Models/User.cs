@@ -7,8 +7,11 @@ public class User : IdentityUser<Guid>
 {
     [Required]
     [MaxLength(120)]
-    public string Name { get; set; }
-    public UserStatus UserStatus { get; set; } = UserStatus.Unverified;
+    public string? Name { get; set; }
+    [MaxLength(120)]
+    public string? Surname { get; set; }
+    
+    public Status Status { get; set; } = Status.Unverified;
 
     public Language Language { get; set; } = Language.En;
 

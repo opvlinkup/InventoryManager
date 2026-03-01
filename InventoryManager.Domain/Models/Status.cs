@@ -1,7 +1,7 @@
 ﻿namespace InventoryManager.Domain.Models;
 
 
-public enum UserStatus
+public enum Status
 {
     Unverified = 0,
     Active = 1,
