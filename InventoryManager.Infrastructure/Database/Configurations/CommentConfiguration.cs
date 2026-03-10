@@ -22,9 +22,9 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
-        builder.HasOne(x => x.Item)
+        builder.HasOne(x => x.Inventory)
             .WithMany(i=> i.Comments)
-            .HasForeignKey(x => x.ItemId)
+            .HasForeignKey(x => x.InventoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.User)
@@ -32,11 +32,11 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => x.ItemId)
+        builder.HasIndex(x => x.InventoryId)
             .HasDatabaseName("IX_Comments_ItemId");
 
-        builder.HasIndex(x => new { x.ItemId, x.CreatedAt })
-            .HasDatabaseName("IX_Comments_ItemId_CreatedAt");
+        builder.HasIndex(x => new { x.InventoryId, x.CreatedAt })
+            .HasDatabaseName("IX_Comments_InventoryId_CreatedAt");
 
         builder.HasIndex(x => x.UserId)
             .HasDatabaseName("IX_Comments_UserId");

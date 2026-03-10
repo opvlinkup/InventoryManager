@@ -1,8 +1,8 @@
 ﻿using InventoryManager.Domain.Models;
 
-namespace InventoryManager.Application.Abstractions.Persistence;
+namespace InventoryManager.Application.Abstractions.Persistence.Repository;
 
-public interface ISessionRepository : IRepository<Session>
+public interface ISessionRepository : IRepository<Domain.Models.Session>
 {
-    Task<Session?> GetByTokenHashAsync(byte[] hash, CancellationToken ct);
+    Task<Domain.Models.Session?> GetByTokenHashAsync(byte[] hash, CancellationToken ct);
 }

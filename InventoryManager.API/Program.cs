@@ -1,23 +1,81 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Text;
+using InventoryManager.Application;
+using InventoryManager.Infrastructure;
+using InventoryManager.Infrastructure.Hubs;
+using InventoryManager.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using DotNetEnv;
 
-// Add services to the container.
+var root = Directory.GetCurrentDirectory();
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+while (!File.Exists(Path.Combine(root, ".env")))
 {
-    app.MapOpenApi();
+    var parent = Directory.GetParent(root);
+    if (parent == null)
+        break;
+    
+    root = parent.FullName;
 }
 
-app.UseHttpsRedirection();
+var envFile = Path.Combine(root, ".env");
 
+if (File.Exists(envFile))
+{
+    Env.Load(envFile);
+}
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddControllers();
+
+var authOptions = builder.Configuration.GetSection("AuthOptions");
+var key = authOptions["Key"] ?? throw new InvalidOperationException("JwtSettings:Key is required");
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var keyBytes = Encoding.UTF8.GetBytes(key);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["ISSUER"],
+            ValidAudience = builder.Configuration["AUDIENCE"],
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("accessToken"))
+                {
+                    context.Token = context.Request.Cookies["accessToken"];
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+builder.Services.AddAuthorization();
+
+
+var app = builder.Build();
+app.UseAuthentication();
+app.UseMiddleware<LastActivityMiddleware>();
 app.UseAuthorization();
-
+app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHub<DiscussionHub>("/hubs/discussion");
 
 app.Run();

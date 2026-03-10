@@ -11,6 +11,9 @@ public class User : IdentityUser<Guid>
     [MaxLength(120)]
     public string? Surname { get; set; }
     
+    public string? GoogleId { get; set; }
+    public string? GooglePictureUrl { get; set; }
+    
     public Status Status { get; set; } = Status.Unverified;
 
     public Language Language { get; set; } = Language.En;

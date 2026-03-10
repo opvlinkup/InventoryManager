@@ -46,11 +46,14 @@ public class FieldMetadataConfiguration : IEntityTypeConfiguration<FieldMetadata
 
         builder.Property(x => x.Order)
             .IsRequired();
-
-
-        builder.HasIndex(x => new { x.InventoryId, x.Slot })
+        
+        builder.ToTable(t =>
+            t.HasCheckConstraint(
+                "CK_FieldMetadata_Slot_Range",
+                "[Slot] >= 1 AND [Slot] <= 3"));
+        builder.HasIndex(x => new { x.InventoryId, x.Type, x.Slot })
             .IsUnique()
-            .HasDatabaseName("UX_FieldMetadata_Inventory_Slot");
+            .HasDatabaseName("UX_FieldMetadata_Inventory_Type_Slot");
         
         builder.HasIndex(x => new { x.InventoryId, x.Order })
             .IsUnique()

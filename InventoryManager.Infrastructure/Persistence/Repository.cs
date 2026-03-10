@@ -81,17 +81,13 @@ public class Repository<T>(InventoryManagerDbContext context) : IRepository<T>
         return await query.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> GetByAsync(
-        Expression<Func<T, bool>> filter,
-        CancellationToken cancellationToken = default)
+    public async Task<T?> GetByAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
         return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
     }
 
-    public async Task<bool> AnyAsync(
-        Expression<Func<T, bool>> filter,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
         return await _dbSet.AnyAsync(filter, cancellationToken);
@@ -125,7 +121,7 @@ public class Repository<T>(InventoryManagerDbContext context) : IRepository<T>
         _dbSet.RemoveRange(entities);
     }
     
-    public async Task RemoveRangeAsync(int batchSize = 100, CancellationToken cancellationToken = default)
+    public async Task RemoveRangeAsync(Expression<Func<T,bool>> filter, int batchSize, CancellationToken cancellationToken = default)
     {
         if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize));
         if (batchSize > 2000) batchSize = 2000;
@@ -140,6 +136,5 @@ public class Repository<T>(InventoryManagerDbContext context) : IRepository<T>
                 break;
         }
     }
-    
-    
+
 }

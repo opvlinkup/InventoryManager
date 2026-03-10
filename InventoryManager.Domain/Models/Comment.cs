@@ -7,8 +7,8 @@ public class Comment
 {
     public Guid Id { get; set; }
 
-    public Guid ItemId { get; set; }
-    public Item Item { get; set; } = null!;
+    public Guid InventoryId { get; set; }
+    public Inventory Inventory { get; set; } = null!;
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

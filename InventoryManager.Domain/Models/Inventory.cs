@@ -14,7 +14,7 @@ public class Inventory
     public string Title { get; set; } = null!;
 
     [MaxLength(4000)]
-    public string Description { get; set; } = null!;
+    public string? Description { get; set; } = null!;
 
     [MaxLength(2048)]
     public string? ImageUrl { get; set; }
@@ -24,7 +24,7 @@ public class Inventory
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    public int CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
     
     [Required]
@@ -38,4 +38,5 @@ public class Inventory
     public ICollection<FieldMetadata> FieldDefinitions { get; set; } = new List<FieldMetadata>();
     public ICollection<CustomIdPart> CustomIdParts { get; set; } = new List<CustomIdPart>();
     public ICollection<InventoryTag> Tags { get; set; } = new List<InventoryTag>();
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

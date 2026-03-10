@@ -1,4 +1,7 @@
-﻿using InventoryManager.Application.Abstractions.Persistence;
+﻿using InventoryManager.Application.Abstractions.Inventory.Comments;
+using InventoryManager.Application.Abstractions.Persistence;
+using InventoryManager.Application.Abstractions.Persistence.Repository;
+using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,7 +14,13 @@ public sealed class UnitOfWork(
     IPermissionRepository permissionRepository,
     IRolePermissionRepository rolePermissionRepository,
     IInventoryRepository inventoryRepository,
-    IInventoryWriteAccessRepository inventoryWriteAccessRepository)
+    IInventoryWriteAccessRepository inventoryWriteAccessRepository,
+    IFieldMetadataRepository fieldMetadataRepository,
+    IItemRepository itemRepository,
+    ILikeRepository likeRepository,
+    IAdminRepository adminRepository,
+    ICommentRepository commentRepository,
+    IUserRoleRepository userRoleRepository)
     : IUnitOfWork, IAsyncDisposable, IDisposable
 {
     private readonly InventoryManagerDbContext _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -24,7 +33,13 @@ public sealed class UnitOfWork(
     public IRolePermissionRepository RolePermissionRepository { get; } = rolePermissionRepository;
     public IInventoryRepository InventoryRepository { get; } = inventoryRepository;
     public IInventoryWriteAccessRepository InventoryWriteAccessRepository { get; } = inventoryWriteAccessRepository;
-
+    public IFieldMetadataRepository FieldMetadataRepository { get; } = fieldMetadataRepository;
+    public IItemRepository ItemRepository { get; } = itemRepository;
+    public ILikeRepository LikeRepository { get; } = likeRepository;
+    public IAdminRepository AdminRepository { get; } = adminRepository;
+    public ICommentRepository CommentRepository { get; } = commentRepository;
+    public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;
+ 
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_currentTransaction != null) return _currentTransaction;

@@ -1,7 +1,8 @@
 ﻿using System.Text.RegularExpressions;
+using InventoryManager.Application.Abstractions.Auth;
 using InventoryManager.Application.Abstractions.Identity;
 using InventoryManager.Application.Abstractions.Messaging;
-using InventoryManager.Application.Abstractions.Persistence;
+using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Application.Abstractions.Security;
 using InventoryManager.Application.DTO;
 using InventoryManager.Application.DTO.Auth;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace InventoryManager.Application.Services;
@@ -24,7 +26,8 @@ public sealed class AuthService(
     IIntegrationEventPublisher publisher,
     IConfiguration configuration,
     ILogger<AuthService> logger,
-    IHttpContextAccessor httpAccessor)
+    IHttpContextAccessor httpAccessor,
+    IGoogleAuthService googleAuthService)
     : IAuthService
 {
     public async Task RegisterAsync(UserRegisterDto dto, CancellationToken ct)
@@ -89,6 +92,36 @@ public sealed class AuthService(
         user.ConcurrencyStamp = Guid.NewGuid().ToString();
         await userManager.UpdateAsync(user);
         
+        return await tokenService.GenerateAuthTokensAsync(user, ct);
+    }
+    
+    public async Task<AuthTokensDto> LoginWithGoogleAsync(string idToken, CancellationToken ct)
+    {
+        var googleUser = await googleAuthService
+            .ValidateTokenAsync(idToken, ct);
+
+        var user = await userManager.Users
+            .FirstOrDefaultAsync(u => u.GoogleId == googleUser.GoogleId, ct);
+
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = googleUser.Email,
+                UserName = googleUser.Email,
+                Name = googleUser.Name,
+                GoogleId = googleUser.GoogleId,
+                EmailConfirmed = true,
+                Status = Status.Active,
+                RegisteredAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(user);
+
+            if (!result.Succeeded)
+                throw new ApplicationException("Failed to create user");
+        }
+
         return await tokenService.GenerateAuthTokensAsync(user, ct);
     }
 

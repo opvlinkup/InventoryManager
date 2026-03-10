@@ -27,5 +27,5 @@ public interface IRepository<T>
     void Update(T entity);
     void Remove(T entity);
     void RemoveRange(IEnumerable<T> entities);
-    Task RemoveRangeAsync(int batchSize = 100, CancellationToken cancellationToken = default);
+    Task RemoveRangeAsync(Expression<Func<T,bool>> filter, int batchSize, CancellationToken cancellationToken = default);
 }

@@ -29,12 +29,24 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.Property(x => x.CustomId).IsRequired().HasMaxLength(200);
         
         builder.Property(x => x.RowVersion).IsRowVersion().IsConcurrencyToken();
+        
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
 
+        builder.ToTable(t =>
+            t.HasCheckConstraint(
+                "CK_Item_CustomId_NotEmpty",
+                "LEN(CustomId) > 0"));
 
-        builder.HasIndex(x => new { x.InventoryId, x.CustomId }).IsUnique().HasDatabaseName("UX_Item_Inventory_CustomId");
-
+        builder.HasIndex(x => new { x.InventoryId, x.CustomId })
+            .IsUnique()
+            .HasDatabaseName("UX_Item_Inventory_CustomId");
+        
+        builder.HasIndex(x => new { x.InventoryId, x.CreatedAt })
+            .HasDatabaseName("IX_Item_Inventory_CreatedAt");
+        
+        builder.HasIndex(x => new { x.Id, x.InventoryId }).HasDatabaseName("IX_Item_Id_InventoryId");
+        
         builder.HasIndex(x => x.InventoryId);
         builder.HasIndex(x => x.CreatedById);
         builder.HasIndex(x => x.CreatedAt);

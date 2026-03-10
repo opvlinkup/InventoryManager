@@ -1,6 +1,6 @@
 ﻿using InventoryManager.Application.Abstractions.Identity;
 using InventoryManager.Application.Abstractions.Jwt;
-using InventoryManager.Application.Abstractions.Persistence;
+using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Application.Abstractions.Security;
 using InventoryManager.Application.DTO.Auth;
 using InventoryManager.Domain.Models;
@@ -19,14 +19,12 @@ public sealed class TokenService(
 {
     public async Task<AuthTokensDto> GenerateAuthTokensAsync(User user, CancellationToken ct)
     {
-        await unitOfWork.BeginTransactionAsync(ct);
-
-        try
-        {
-            var access = await jwt.GenerateAccessTokenAsync(user, ct);
+       
+            var roles = await users.GetRolesAsync(user);
+            
             var (refresh, expires) = await jwt.GenerateRefreshTokenAsync(user, ct);
 
-            var ctx = httpContextAccessor.HttpContext
+            var httpContext = httpContextAccessor.HttpContext
                 ?? throw new InvalidOperationException("HttpContext unavailable");
 
             var session = new Session
@@ -36,10 +34,12 @@ public sealed class TokenService(
                 RefreshTokenHash = hash.ComputeHash(refresh),
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = expires,
-                IpAddress = ctx.Connection.RemoteIpAddress?.ToString(),
-                UserAgent = ctx.Request.Headers["User-Agent"].ToString(),
-                DeviceFingerprint = ctx.Request.Headers["X-Device-Fingerprint"].ToString()
+                IpAddress = httpContext.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = httpContext.Request.Headers["User-Agent"].ToString(),
+                DeviceFingerprint = httpContext.Request.Headers["X-Device-Fingerprint"].ToString()
             };
+            
+            var access = await jwt.GenerateAccessTokenAsync(user, roles, session.Id,  ct);
 
             await unitOfWork.SessionRepository.AddAsync(session, ct);
 
@@ -51,20 +51,10 @@ public sealed class TokenService(
                 RefreshToken = refresh,
                 RefreshTokenExpiresAt = expires
             };
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync(ct);
-            throw;
-        }
     }
 
     public async Task<AuthTokensDto> RotateRefreshTokenAsync(string refreshToken, CancellationToken ct)
     {
-        await unitOfWork.BeginTransactionAsync(ct);
-
-        try
-        {
             var refreshHash = hash.ComputeHash(refreshToken);
 
             var session = await unitOfWork.SessionRepository.GetByAsync(
@@ -105,7 +95,8 @@ public sealed class TokenService(
             var user = await users.FindByIdAsync(session.UserId.ToString())
                 ?? throw new UnauthorizedAccessException();
 
-            var access = await jwt.GenerateAccessTokenAsync(user, ct);
+            var roles = await users.GetRolesAsync(user);
+            var access = await jwt.GenerateAccessTokenAsync(user, roles, session.Id,  ct);
             var (newRefresh, newExpires) = await jwt.GenerateRefreshTokenAsync(user, ct);
 
             var newSession = new Session
@@ -132,11 +123,5 @@ public sealed class TokenService(
                 RefreshToken = newRefresh,
                 RefreshTokenExpiresAt = newExpires
             };
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync(ct);
-            throw;
-        }
     }
 }

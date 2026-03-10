@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace InventoryManager.Domain.Models;
+﻿namespace InventoryManager.Domain.Models;
 
 public class Session
 {

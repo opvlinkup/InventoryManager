@@ -1,5 +1,5 @@
 ﻿using InventoryManager.Application.Abstractions.Permissions;
-using InventoryManager.Application.Abstractions.Persistence;
+using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 

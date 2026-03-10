@@ -28,22 +28,45 @@ public sealed class JwtService : IJwtService
         _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
     }
 
-    public Task<string> GenerateAccessTokenAsync(User user, CancellationToken ct = default)
+    public Task<string> GenerateAccessTokenAsync(
+        User user,
+        IEnumerable<string> roles,
+        Guid sessionId,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(roles);
 
         var now = DateTime.UtcNow;
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Iat,
-                DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+
+            new Claim(ClaimTypes.Name, user.Name ?? string.Empty),
+
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+            new Claim(
+                JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), 
                 ClaimValueTypes.Integer64),
-            new("status", user.Status.ToString())
+
+            new Claim(JwtRegisteredClaimNames.Sid, sessionId.ToString()),
+
+            new Claim("status", user.Status.ToString())
         };
+
+        foreach (var role in roles)
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+        }
 
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,
@@ -51,24 +74,26 @@ public sealed class JwtService : IJwtService
             claims: claims,
             notBefore: now,
             expires: now.AddMinutes(_options.AccessTokenLifetimeMinutes),
-            signingCredentials: new SigningCredentials(
-                _signingKey,
-                SecurityAlgorithms.HmacSha512)
+            signingCredentials: new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha512)
         );
 
-        return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
-    }
+        var tokenHandler = new JwtSecurityTokenHandler();
 
-    public Task<(string Token, DateTime Expiration)> GenerateRefreshTokenAsync(
-        User user,
-        CancellationToken ct = default)
+        return Task.FromResult(tokenHandler.WriteToken(token));
+    }
+    
+
+    public Task<(string Token, DateTime Expiration)> GenerateRefreshTokenAsync(User user, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(user);
+
         var randomBytes = RandomNumberGenerator.GetBytes(64);
+
         var token = WebEncoders.Base64UrlEncode(randomBytes);
 
-        var expiresAt = DateTime.UtcNow.AddDays(_options.RefreshTokenLifetimeDays);
+        var expiration = DateTime.UtcNow.AddDays(_options.RefreshTokenLifetimeDays);
 
-        return Task.FromResult((token, expiresAt));
+        return Task.FromResult((token, expiration));
     }
 
     private static void ValidateOptions(JwtOptions options)
@@ -80,10 +105,18 @@ public sealed class JwtService : IJwtService
             throw new InvalidOperationException(
                 "JWT signing key must be at least 64 bytes for HS512");
 
-        if (options.AccessTokenLifetimeMinutes <= 0)
-            throw new InvalidOperationException("Access token lifetime is invalid");
+        if (options.AccessTokenLifetimeMinutes <= 0 || options.AccessTokenLifetimeMinutes > 10)
+            throw new InvalidOperationException(
+                "Access token lifetime is invalid");
 
-        if (options.RefreshTokenLifetimeDays <= 0)
-            throw new InvalidOperationException("Refresh token lifetime is invalid");
+        if (options.RefreshTokenLifetimeDays <= 0 || options.RefreshTokenLifetimeDays > 30)
+            throw new InvalidOperationException(
+                "Refresh token lifetime is invalid");
+
+        if (string.IsNullOrWhiteSpace(options.Issuer))
+            throw new InvalidOperationException("JWT issuer is missing");
+
+        if (string.IsNullOrWhiteSpace(options.Audience))
+            throw new InvalidOperationException("JWT audience is missing");
     }
 }
