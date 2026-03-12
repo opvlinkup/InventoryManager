@@ -1,12 +1,13 @@
 ﻿using InventoryManager.Domain.Models;
 using InventoryManager.Infrastructure.Email;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManager.Infrastructure.Database;
 
-public class InventoryManagerDbContext : IdentityUserContext<User, Guid>, IDataProtectionKeyContext{
+public class InventoryManagerDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>, IDataProtectionKeyContext{
     public InventoryManagerDbContext(DbContextOptions<InventoryManagerDbContext> options)
         : base(options)
     {

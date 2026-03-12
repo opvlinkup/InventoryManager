@@ -52,13 +52,10 @@ public static class DependencyInjection
                 options.SignIn.RequireConfirmedEmail = true;
                 options.Lockout.AllowedForNewUsers = false;
             })
-            .AddEntityFrameworkStores<InventoryManagerDbContext>()
-            .AddSignInManager()
+            .AddRoles<IdentityRole<Guid>>()              
+            .AddSignInManager<SignInManager<User>>()
+            .AddEntityFrameworkStores<InventoryManagerDbContext>() 
             .AddDefaultTokenProviders();
-
-        services.AddDataProtection()
-            .PersistKeysToDbContext<InventoryManagerDbContext>()
-            .SetApplicationName("InventoryManager");
         
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();

@@ -69,6 +69,8 @@ public sealed class AuthService(
             throw new ApplicationException(errors);
         }
         
+        await userManager.AddToRoleAsync(user, "User");
+        
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = Uri.EscapeDataString(token);
 

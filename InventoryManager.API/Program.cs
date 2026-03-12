@@ -6,6 +6,7 @@ using InventoryManager.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
+using InventoryManager.Infrastructure.Database;
 
 var root = Directory.GetCurrentDirectory();
 
@@ -88,8 +89,14 @@ builder.Services.AddAuthentication(options =>
     });
 builder.Services.AddAuthorization();
 
-
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await DbInitializer.SeedRolesAndAdminAsync(services);
+}
+
 app.UseAuthentication();
 app.UseMiddleware<LastActivityMiddleware>();
 app.UseAuthorization();

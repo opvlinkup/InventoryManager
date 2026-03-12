@@ -29,7 +29,7 @@ public sealed class OutboxProcessor(IServiceProvider serviceProvider, ILogger<Ou
                 logger.LogError(ex, "Outbox processing cycle failed");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
     }
 
