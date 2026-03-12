@@ -5,6 +5,7 @@ using System.Text;
 using InventoryManager.Application.Abstractions.Jwt;
 using InventoryManager.Domain.Models;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -14,20 +15,47 @@ namespace InventoryManager.Infrastructure.Jwt;
 
 public sealed class JwtService : IJwtService
 {
-    private readonly JwtOptions _options;
+   
     private readonly SymmetricSecurityKey _signingKey;
     private readonly ILogger<JwtService> _logger;
+    private readonly string _issuer;
+    private readonly string _audience;
+    private readonly int _accessTokenMinutes;
+    private readonly int _refreshTokenDays;
 
-    public JwtService(IOptions<JwtOptions> options, ILogger<JwtService> logger)
+    public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
     {
-        _options = options.Value;
         _logger = logger;
+        
+        var signingKey = configuration["JWT_SEC_KEY"];
+        _issuer = configuration["ISSUER"] ?? throw new InvalidOperationException("JWT issuer is missing");
+        _audience = configuration["AUDIENCE"] ?? throw new InvalidOperationException("JWT audience is missing");
+        _accessTokenMinutes = int.TryParse(configuration["JJWT_ACCESS_LIFETIME_MINUTES"], out var m) ? m : 5;
+        _refreshTokenDays = int.TryParse(configuration["JWT_REFRESH_LIFETIME_DAYS"], out var d) ? d : 7;
 
-        ValidateOptions(_options);
+        // Проверка ключа
+        if (string.IsNullOrWhiteSpace(signingKey))
+            throw new InvalidOperationException("JWT signing key is missing");
 
-        _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
+        if (Encoding.UTF8.GetByteCount(signingKey) < 64)
+            throw new InvalidOperationException("JWT signing key must be at least 64 bytes for HS512");
+
+        if (string.IsNullOrWhiteSpace(_issuer))
+            throw new InvalidOperationException("JWT issuer is missing");
+
+        if (string.IsNullOrWhiteSpace(_audience))
+            throw new InvalidOperationException("JWT audience is missing");
+
+        if (_accessTokenMinutes <= 0 || _accessTokenMinutes > 10)
+            throw new InvalidOperationException("Access token lifetime is invalid");
+
+        if (_refreshTokenDays <= 0 || _refreshTokenDays > 30)
+            throw new InvalidOperationException("Refresh token lifetime is invalid");
+
+        _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
     }
 
+    
     public Task<string> GenerateAccessTokenAsync(
         User user,
         IEnumerable<string> roles,
@@ -69,13 +97,14 @@ public sealed class JwtService : IJwtService
         }
 
         var token = new JwtSecurityToken(
-            issuer: _options.Issuer,
-            audience: _options.Audience,
+            issuer: _issuer,
+            audience: _audience,
             claims: claims,
             notBefore: now,
-            expires: now.AddMinutes(_options.AccessTokenLifetimeMinutes),
+            expires: now.AddMinutes(_accessTokenMinutes),
             signingCredentials: new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha512)
         );
+
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -91,32 +120,9 @@ public sealed class JwtService : IJwtService
 
         var token = WebEncoders.Base64UrlEncode(randomBytes);
 
-        var expiration = DateTime.UtcNow.AddDays(_options.RefreshTokenLifetimeDays);
+        var expiration = DateTime.UtcNow.AddDays(_refreshTokenDays);
 
         return Task.FromResult((token, expiration));
     }
-
-    private static void ValidateOptions(JwtOptions options)
-    {
-        if (string.IsNullOrWhiteSpace(options.SigningKey))
-            throw new InvalidOperationException("JWT signing key is missing");
-
-        if (Encoding.UTF8.GetByteCount(options.SigningKey) < 64)
-            throw new InvalidOperationException(
-                "JWT signing key must be at least 64 bytes for HS512");
-
-        if (options.AccessTokenLifetimeMinutes <= 0 || options.AccessTokenLifetimeMinutes > 10)
-            throw new InvalidOperationException(
-                "Access token lifetime is invalid");
-
-        if (options.RefreshTokenLifetimeDays <= 0 || options.RefreshTokenLifetimeDays > 30)
-            throw new InvalidOperationException(
-                "Refresh token lifetime is invalid");
-
-        if (string.IsNullOrWhiteSpace(options.Issuer))
-            throw new InvalidOperationException("JWT issuer is missing");
-
-        if (string.IsNullOrWhiteSpace(options.Audience))
-            throw new InvalidOperationException("JWT audience is missing");
-    }
+    
 }

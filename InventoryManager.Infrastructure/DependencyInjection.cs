@@ -81,6 +81,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IHashingService, HashingService>();
         services.AddScoped<IIntegrationEventPublisher, OutboxIntegrationEventPublisher>();
+        services.AddScoped<ICookieService, CookieService>();
         
         services.AddSignalR();
         services.AddHttpClient();

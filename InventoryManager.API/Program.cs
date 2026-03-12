@@ -27,6 +27,25 @@ if (File.Exists(envFile))
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables(); 
+
+var frontendUrl = builder.Configuration["AUDIENCE"] ?? throw new ArgumentNullException($"builder.Configuration[\"AUDIENCE\"]");
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+builder.WebHost.UseUrls($"https://*:{port}");
+
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(
+            "DefaultCorsPolicy",
+            policy =>
+                policy.WithOrigins(frontendUrl)
+                    .WithMethods("GET", "POST", "PATCH", "DELETE").
+                    AllowCredentials().
+                    AllowAnyHeader());
+    }
+);
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
