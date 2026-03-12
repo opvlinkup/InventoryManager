@@ -38,6 +38,8 @@ public class Item
     public string? Link3 { get; set; }
 
     public byte[] RowVersion { get; set; } = null!;
+    
+    public long? Sequence { get; set; }
 
     public ICollection<Like> Likes { get; set; } = new List<Like>();
 }

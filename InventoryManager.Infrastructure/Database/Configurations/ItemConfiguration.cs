@@ -1,4 +1,4 @@
-﻿using InventoryManager.Domain.Models;
+﻿﻿using InventoryManager.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,11 +32,13 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
+        builder.Property(x => x.Sequence);
+        
 
         builder.ToTable(t =>
             t.HasCheckConstraint(
                 "CK_Item_CustomId_NotEmpty",
-                "LEN(CustomId) > 0"));
+                "\"CustomId\" <> ''"));
 
         builder.HasIndex(x => new { x.InventoryId, x.CustomId })
             .IsUnique()
@@ -45,7 +47,7 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => new { x.InventoryId, x.CreatedAt })
             .HasDatabaseName("IX_Item_Inventory_CreatedAt");
         
-        builder.HasIndex(x => new { x.Id, x.InventoryId }).HasDatabaseName("IX_Item_Id_InventoryId");
+        builder.HasIndex(x => new { x.InventoryId, x.Sequence });
         
         builder.HasIndex(x => x.InventoryId);
         builder.HasIndex(x => x.CreatedById);

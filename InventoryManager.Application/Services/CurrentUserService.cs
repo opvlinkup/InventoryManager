@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using InventoryManager.Application.Abstractions.Identity;
 using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
+using InventoryManager.Application.DTO;
 using Microsoft.AspNetCore.Http;
 
 namespace InventoryManager.Infrastructure.Identity;
@@ -10,6 +11,11 @@ public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor,
     private ClaimsPrincipal? User => httpContextAccessor.HttpContext?.User;
 
     public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
+    public string? Email => User?.FindFirst(ClaimTypes.Email)?.Value;
+    public string? IpAddress => httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+    public string? UserAgent => httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
+    public string? DeviceFingerprint => httpContextAccessor.HttpContext?.Request.Headers["X-Device-Fingerprint"].ToString();
+
 
     public Guid UserId
     {
@@ -35,9 +41,6 @@ public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor,
         return User!.IsInRole(role);
     }
     
-    public string? Email => User?.FindFirstValue(ClaimTypes.Email);
-    public string? Name => User?.FindFirstValue(ClaimTypes.Name);
-    public string? Surname => User?.FindFirstValue(ClaimTypes.Surname);
     
     public async Task UpdateLastActivityAsync(CancellationToken ct)
     {
@@ -45,5 +48,31 @@ public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor,
         session.LastUsedAt = DateTime.UtcNow;
         unitOfWork.SessionRepository.Update(session);
        await  unitOfWork.SaveChangesAsync(CancellationToken.None);
+    }
+    
+    public async Task<UserDto> GetCurrentUserAsync(CancellationToken ct)
+    {
+        if (!IsAuthenticated)
+            throw new UnauthorizedAccessException("User not authenticated.");
+
+        var userId = UserId;
+
+        var user = await unitOfWork.UserRepository
+                       .GetByAsync(u => u.Id == userId, ct)
+                   ?? throw new UnauthorizedAccessException("User not found.");
+
+        var session = await unitOfWork.SessionRepository
+            .GetByAsync(s => s.UserId == userId, ct);
+
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            Name = user.Name!,
+            Language = user.Language,
+            Status = user.Status,
+            Theme = user.Theme,
+            LastSeenAt = session?.LastUsedAt
+        };
     }
 }

@@ -27,7 +27,8 @@ public sealed class AuthService(
     IConfiguration configuration,
     ILogger<AuthService> logger,
     IHttpContextAccessor httpAccessor,
-    IGoogleAuthService googleAuthService)
+    IGoogleAuthService googleAuthService,
+    ICurrentUserService currentUserService)
     : IAuthService
 {
     public async Task RegisterAsync(UserRegisterDto dto, CancellationToken ct)
@@ -48,7 +49,9 @@ public sealed class AuthService(
             Status = Status.Unverified,
             SecurityStamp = Guid.NewGuid().ToString(),
             ConcurrencyStamp = Guid.NewGuid().ToString(),
-            EmailConfirmed = false
+            EmailConfirmed = false,
+            Language = Language.En,
+            Theme = Theme.Dark
         };
         
         var result = await userManager.CreateAsync(user, dto.Password);
@@ -136,12 +139,26 @@ public sealed class AuthService(
         if (session == null || session.IsRevoked)
             return;
         
-        var user = await userManager.FindByIdAsync(session.UserId.ToString())
-                   ?? throw new UnauthorizedAccessException("User not found");
-        
         session.IsRevoked = true;
         session.RevokedAt = DateTime.UtcNow;
-        session.RevokedByIp = httpAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+        session.RevokedByIp = currentUserService.IpAddress;
+    }
+    
+    public async Task ConfirmEmailAsync(Guid userId, string token, CancellationToken ct)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString())
+                   ?? throw new InvalidOperationException("Invalid confirmation link");
+
+        var result = await userManager.ConfirmEmailAsync(user, token);
+
+        if (!result.Succeeded)
+            throw new InvalidOperationException("Invalid or expired confirmation token");
+
+        if (user.Status != Status.Blocked)
+        {
+            user.Status = Status.Active;
+            await userManager.UpdateAsync(user);
+        }
     }
     
 }

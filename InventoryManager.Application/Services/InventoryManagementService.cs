@@ -35,7 +35,28 @@ public sealed class InventoryManagementService(
         };
 
         await unitOfWork.InventoryRepository.AddAsync(inventory, ct);
+        
+        if (dto.CustomIdParts.Count > 0)
+        {
+            var customIdParts = dto.CustomIdParts
+                .OrderBy(p => p.Order)
+                .Select(p => new CustomIdPart
+                {
+                    Id = Guid.NewGuid(),
+                    InventoryId = inventory.Id,
+                    Type = p.Type,
+                    FixedValue = p.FixedValue,
+                    Format = p.Format,
+                    Order = p.Order
+                })
+                .ToList();
 
+            foreach (var part in customIdParts)
+            {
+                await unitOfWork.CustomIdPartRepository.AddAsync(part, ct);
+            }
+        }
+        
         return inventory.Id;
     }
 

@@ -9,4 +9,5 @@ public interface IAuthService
     public Task<AuthTokensDto> LoginAsync(UserLoginDto dto, CancellationToken ct);
     public Task LogOutAsync(string refreshToken, CancellationToken ct);
     public Task<AuthTokensDto> LoginWithGoogleAsync(string idToken, CancellationToken ct);
+    public Task ConfirmEmailAsync(Guid userId, string token, CancellationToken ct);
 }

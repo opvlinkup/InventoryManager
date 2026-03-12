@@ -50,7 +50,7 @@ public class FieldMetadataConfiguration : IEntityTypeConfiguration<FieldMetadata
         builder.ToTable(t =>
             t.HasCheckConstraint(
                 "CK_FieldMetadata_Slot_Range",
-                "[Slot] >= 1 AND [Slot] <= 3"));
+                "\"Slot\" >= 1 AND \"Slot\" <= 3"));
         builder.HasIndex(x => new { x.InventoryId, x.Type, x.Slot })
             .IsUnique()
             .HasDatabaseName("UX_FieldMetadata_Inventory_Type_Slot");

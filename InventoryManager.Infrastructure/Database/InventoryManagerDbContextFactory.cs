@@ -18,9 +18,10 @@ public sealed class InventoryManagerDbContextFactory : IDesignTimeDbContextFacto
             .AddEnvironmentVariables()
             .Build();
 
-
-        var connectionString =
-            configuration.GetConnectionString("DefaultConnection");
+        // Try to get connection string from DB_CONNECTION env variable first, then from appsettings
+        var connectionString = configuration["DB_CONNECTION_LOCAL"] 
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string not found. Set DB_CONNECTION environment variable or DefaultConnection in appsettings.json");
 
         var optionsBuilder = new DbContextOptionsBuilder<InventoryManagerDbContext>();
 

@@ -20,7 +20,8 @@ public sealed class UnitOfWork(
     ILikeRepository likeRepository,
     IAdminRepository adminRepository,
     ICommentRepository commentRepository,
-    IUserRoleRepository userRoleRepository)
+    IUserRoleRepository userRoleRepository,
+    ICustomIdPartRepository customIdPartRepository)
     : IUnitOfWork, IAsyncDisposable, IDisposable
 {
     private readonly InventoryManagerDbContext _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -39,6 +40,8 @@ public sealed class UnitOfWork(
     public IAdminRepository AdminRepository { get; } = adminRepository;
     public ICommentRepository CommentRepository { get; } = commentRepository;
     public IUserRoleRepository UserRoleRepository { get; } = userRoleRepository;
+    public ICustomIdPartRepository CustomIdPartRepository { get; } = customIdPartRepository;
+   
  
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {

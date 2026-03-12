@@ -74,7 +74,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseMiddleware<LastActivityMiddleware>();
 app.UseAuthorization();
-app.UseHttpsRedirection();
+app.UseMiddleware<TransactionMiddleware>();
 app.MapControllers();
 app.MapHub<DiscussionHub>("/hubs/discussion");
 

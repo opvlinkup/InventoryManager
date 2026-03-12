@@ -98,7 +98,6 @@ public class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
         builder.HasIndex(x => x.CreatedAt);
         builder.HasIndex(x => x.UpdatedAt);
         builder.HasIndex(x => x.CategoryId);
-        builder.HasIndex(x => new { x.OwnerId, x.Title })
-            .IsUnique();
+        builder.HasIndex(x => new { x.OwnerId, x.Title }).IsUnique();
     }
 }

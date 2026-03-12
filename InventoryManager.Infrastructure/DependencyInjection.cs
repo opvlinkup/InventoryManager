@@ -3,16 +3,20 @@ using InventoryManager.Application.Abstractions.Auth;
 using InventoryManager.Application.Abstractions.Email;
 using InventoryManager.Application.Abstractions.Identity;
 using InventoryManager.Application.Abstractions.Jwt;
+using InventoryManager.Application.Abstractions.Messaging;
 using InventoryManager.Application.Abstractions.Persistence;
 using InventoryManager.Application.Abstractions.Persistence.Repository;
 using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
+using InventoryManager.Application.Abstractions.Security;
 using InventoryManager.Application.Services;
 using InventoryManager.Domain.Models;
 using InventoryManager.Infrastructure.Database;
 using InventoryManager.Infrastructure.Email;
 using InventoryManager.Infrastructure.Identity;
 using InventoryManager.Infrastructure.Jwt;
+using InventoryManager.Infrastructure.Messaging;
 using InventoryManager.Infrastructure.Persistence;
+using InventoryManager.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +36,7 @@ public static class DependencyInjection
             .SetApplicationName("InventoryManager");
 
         services.AddDbContext<InventoryManagerDbContext>(options =>
-            options.UseNpgsql(configuration["DB_CONNECTION"]));
+            options.UseNpgsql(configuration["DB_CONNECTION_LOCAL"]));
 
         services.AddIdentityCore<User>(options =>
             {
@@ -62,9 +66,22 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IInventoryRepository, InventoryRepository>();
+        services.AddScoped<IInventoryWriteAccessRepository, InventoryWriteAccessRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICustomIdPartRepository, CustomIdPartRepository>();
+        services.AddScoped<IFieldMetadataRepository, FieldmetadataRepository>();
+        services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<ILikeRepository, LikeRepository>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IHashingService, HashingService>();
+        services.AddScoped<IIntegrationEventPublisher, OutboxIntegrationEventPublisher>();
+        
         services.AddSignalR();
         services.AddHttpClient();
         services.AddScoped<IEmailService, EmailService>();

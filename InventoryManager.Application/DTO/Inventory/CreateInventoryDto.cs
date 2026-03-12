@@ -11,6 +11,7 @@ public sealed class CreateInventoryDto
     public bool IsPublic { get; set; }
     
     public WriteAccessMode WriteAccessMode { get; set; }
-
+    public IReadOnlyList<CustomIdPartDto> CustomIdParts { get; set; } = [];
     public IReadOnlyList<FieldInitialMetadataDto> Fields { get; set; } = [];
+    
 }

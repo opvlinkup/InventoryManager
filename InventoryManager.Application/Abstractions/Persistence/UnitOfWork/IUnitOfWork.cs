@@ -18,6 +18,8 @@ public interface IUnitOfWork : IAsyncDisposable
     IAdminRepository AdminRepository { get; }
     ICommentRepository CommentRepository { get; }
     IUserRoleRepository UserRoleRepository { get; }
+    ICustomIdPartRepository CustomIdPartRepository { get; }
+
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

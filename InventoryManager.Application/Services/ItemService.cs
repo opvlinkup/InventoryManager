@@ -3,6 +3,7 @@ using InventoryManager.Application.Abstractions.Inventory.Fields;
 using InventoryManager.Application.Abstractions.Inventory.Items;
 using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Application.Abstractions.Security;
+using InventoryManager.Application.Abstractions.Validators;
 using InventoryManager.Application.DTO.Item;
 using InventoryManager.Domain.Models;
 
@@ -12,7 +13,9 @@ public sealed class ItemService(
     IUnitOfWork unitOfWork,
     IInventoryAccessService accessService,
     IInventoryTemplateService templateService,
-    IFieldMetadataService fieldMetadataService
+    IFieldMetadataService fieldMetadataService,
+    ICustomIdGenerator customIdGenerator,
+    ICustomIdValidator customIdValidator
 ) : IItemService
 {
     public async Task<Guid> CreateItemAsync(Guid inventoryId, ItemDraftDto dto, Guid userId, CancellationToken ct)
@@ -21,16 +24,17 @@ public sealed class ItemService(
 
         await accessService.EnsureCanEditAsync(inventoryId, userId, ct);
 
-        await templateService.ValidateItemAgainstTemplateAsync(
-            inventoryId,
-            dto,
-            ct);
-
+        await templateService.ValidateItemAgainstTemplateAsync(inventoryId, dto, ct);
+        
+        var (customId, sequence) = await customIdGenerator.GenerateAsync(inventoryId, ct);
+        
         var now = DateTime.UtcNow;
 
         var item = new Item
         {
             Id = Guid.NewGuid(),
+            CustomId = customId,
+            Sequence = sequence,
             InventoryId = inventoryId,
             CreatedById = userId,
             CreatedAt = now,
@@ -75,7 +79,9 @@ public sealed class ItemService(
             ?? throw new InvalidOperationException("Item not found.");
 
         await accessService.EnsureCanEditAsync(item.InventoryId, userId, ct);
-
+        
+        await customIdValidator.ValidateAsync(item.InventoryId, dto.CustomId, ct);
+        
         var validationDraft = new ItemDraftDto
         {
             Text1 = dto.Text1,

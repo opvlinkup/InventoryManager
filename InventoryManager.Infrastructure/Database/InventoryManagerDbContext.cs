@@ -27,6 +27,7 @@ public class InventoryManagerDbContext : IdentityUserContext<User, Guid>, IDataP
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
+    public DbSet<ItemCounter> InventorySequences { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {

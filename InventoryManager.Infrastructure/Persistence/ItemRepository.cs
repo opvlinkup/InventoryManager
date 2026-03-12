@@ -27,4 +27,13 @@ public class ItemRepository(InventoryManagerDbContext context) : Repository<Item
     {
         return await context.Items.Where(x => x.InventoryId == inventoryId).AsNoTracking().ToListAsync(ct);
     }
+    
+    public async Task<long> GetNextSequenceAsync(Guid inventoryId, CancellationToken ct)
+    {
+        var max = await context.Items
+            .Where(x => x.InventoryId == inventoryId)
+            .MaxAsync(x => (long?)x.Sequence, ct);
+
+        return (max ?? 0) + 1;
+    }
 }
