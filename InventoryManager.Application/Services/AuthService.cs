@@ -26,7 +26,6 @@ public sealed class AuthService(
     IIntegrationEventPublisher publisher,
     IConfiguration configuration,
     ILogger<AuthService> logger,
-    IHttpContextAccessor httpAccessor,
     IGoogleAuthService googleAuthService,
     ICurrentUserService currentUserService)
     : IAuthService
@@ -72,16 +71,17 @@ public sealed class AuthService(
         await userManager.AddToRoleAsync(user, "User");
         
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = Uri.EscapeDataString(token);
 
         var integrationEvent = new UserRegisteredIntegrationEvent()
         {
             UserId = user.Id,
             Email = user.Email,
-            ConfirmationToken = encodedToken
+            ConfirmationToken = token
         };
         
         await publisher.PublishAsync(integrationEvent, ct);
+
+        await unitOfWork.SaveChangesAsync(ct);
 
     }
 

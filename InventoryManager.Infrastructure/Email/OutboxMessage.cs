@@ -9,6 +9,8 @@ public class OutboxMessage
     public string Content { get; set; } = null!;
 
     public DateTime OccurredOn { get; set; }
+    
+    public string? ConfirmationToken { get; set; }  
 
     public DateTime? ProcessedOn { get; set; }
 

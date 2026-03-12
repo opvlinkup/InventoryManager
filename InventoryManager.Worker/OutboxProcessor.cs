@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManager.Worker;
 
+
 public sealed class OutboxProcessor(IServiceProvider serviceProvider, ILogger<OutboxProcessor> logger) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -46,6 +47,11 @@ public sealed class OutboxProcessor(IServiceProvider serviceProvider, ILogger<Ou
             .Take(20)
             .ToListAsync(ct);
 
+        if (messages.Count == 0)
+            return;
+
+        logger.LogInformation("Processing {Count} outbox messages", messages.Count);
+
         foreach (var message in messages)
         {
             try
@@ -54,37 +60,43 @@ public sealed class OutboxProcessor(IServiceProvider serviceProvider, ILogger<Ou
 
                 message.ProcessedOn = DateTime.UtcNow;
                 message.Error = null;
+
+                logger.LogInformation(
+                    "Outbox message {MessageId} processed successfully",
+                    message.Id);
             }
             catch (Exception ex)
             {
                 message.Error = ex.ToString();
 
-                logger.LogError(ex, "Failed to process outbox message {MessageId}", message.Id);
+                logger.LogError(
+                    ex,
+                    "Failed to process outbox message {MessageId}",
+                    message.Id);
             }
         }
 
         await db.SaveChangesAsync(ct);
     }
 
-    private static async Task ProcessMessage(OutboxMessage message, IEmailService emailService, CancellationToken ct)
+    private static async Task ProcessMessage(
+        OutboxMessage message,
+        IEmailService emailService,
+        CancellationToken ct)
     {
-        switch (message.Type)
+        if (message.Type == typeof(UserRegisteredIntegrationEvent).FullName)
         {
-            case nameof(UserRegisteredIntegrationEvent):
+            var emailEvent =
+                JsonSerializer.Deserialize<UserRegisteredIntegrationEvent>(
+                    message.Content,
+                    JsonOptions)
+                ?? throw new InvalidOperationException("Invalid outbox payload");
 
-                var emailEvent =
-                    JsonSerializer.Deserialize<UserRegisteredIntegrationEvent>(
-                        message.Content,
-                        JsonOptions)
-                    ?? throw new InvalidOperationException("Invalid outbox payload");
-
-                await emailService.SendConfirmationAsync(
-                    emailEvent.UserId,
-                    emailEvent.Email,
-                    emailEvent.ConfirmationToken,
-                    ct);
-
-                break;
+            await emailService.SendConfirmationAsync(
+                emailEvent.UserId,
+                emailEvent.Email,
+                emailEvent.ConfirmationToken,
+                ct);
         }
     }
 }

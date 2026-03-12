@@ -7,42 +7,47 @@ using Microsoft.Extensions.Logging;
 namespace InventoryManager.Infrastructure.Email;
 
 public sealed class EmailService(
-    IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
+    IHttpClientFactory httpClientFactory,
+    IConfiguration configuration,
+    ILogger<EmailService> logger) : IEmailService
 {
-    public async Task SendConfirmationAsync(
-        Guid userId,
-        string email,
-        string token,
-        CancellationToken ct)
+    public async Task SendConfirmationAsync(Guid userId, string email, string token, CancellationToken ct)
     {
-        var apiKey = configuration["RESEND_API_KEY"]
-                     ?? throw new InvalidOperationException("RESEND_API_KEY missing");
+        var apiKey =
+            configuration["RESEND_API_KEY"]
+            ?? throw new InvalidOperationException("RESEND_API_KEY missing");
 
-        var sender = configuration["RESEND_API_FROM"]
-                     ?? throw new InvalidOperationException("RESEND_FROM missing");
+        var sender =
+            configuration["RESEND_API_FROM"]
+            ?? throw new InvalidOperationException("RESEND_API_FROM missing");
 
-        var resendUrl = configuration["RESEND_API"]
-                        ?? "https://api.resend.com";
+        var resendUrl =
+            configuration["RESEND_API"]
+            ?? "https://api.resend.com";
 
-        var frontendUrl = configuration["CLIENT_BASE_URL"]
-                          ?? throw new InvalidOperationException("CLIENT_BASE_URL missing");
+        var frontendUrl =
+            configuration["AUDIENCE"]
+            ?? throw new InvalidOperationException("AUDIENCE missing");
+        
+        if (string.IsNullOrWhiteSpace(token))
+            throw new ArgumentException("Confirmation token is missing");
 
         var encodedToken = Uri.EscapeDataString(token);
 
-        var confirmationLink = $"{frontendUrl}/api/auth/confirm-email?userId={userId}&token={encodedToken}";
+        var confirmationLink =
+            $"{frontendUrl}/api/auth/confirm-email?userId={userId}&token={encodedToken}";
 
         var html = $"""
-                    <h3>Confirm your email</h3>
-                    <p>Please confirm your account:</p>
-                    <p><a href="{confirmationLink}">Confirm Email</a></p>
-                    """;
+        <h3>Confirm your email</h3>
+        <p>Please confirm your account:</p>
+        <p><a href="{confirmationLink}">Confirm Email</a></p>
+        """;
 
         var client = httpClientFactory.CreateClient();
 
         client.BaseAddress = new Uri(resendUrl);
-        
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", apiKey);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         var body = new
         {
@@ -52,13 +57,23 @@ public sealed class EmailService(
             html
         };
 
+        logger.LogInformation("Sending confirmation email to {Email}", email);
+
         var response = await client.PostAsJsonAsync("emails", body, ct);
 
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(ct);
 
-            logger.LogError("Email sending failed {Status}: {Error}", response.StatusCode, error);
+            logger.LogError(
+                "Email sending failed. Status: {Status}. Response: {Error}",
+                response.StatusCode,
+                error);
+
+            throw new InvalidOperationException(
+                $"Email sending failed: {response.StatusCode} {error}");
         }
+
+        logger.LogInformation("Email successfully sent to {Email}", email);
     }
 }

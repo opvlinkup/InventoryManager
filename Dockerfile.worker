@@ -1,0 +1,30 @@
+﻿# ---------- BUILD ----------
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+WORKDIR /src
+
+COPY InventoryManager.sln .
+
+COPY InventoryManager.API/*.csproj InventoryManager.API/
+COPY InventoryManager.Application/*.csproj InventoryManager.Application/
+COPY InventoryManager.Infrastructure/*.csproj InventoryManager.Infrastructure/
+COPY InventoryManager.Domain/*.csproj InventoryManager.Domain/
+COPY InventoryManager.Worker/*.csproj InventoryManager.Worker/
+
+RUN dotnet restore InventoryManager.sln
+
+COPY . .
+
+WORKDIR /src/InventoryManager.Worker
+RUN dotnet publish InventoryManager.Worker.csproj \
+    -c Release \
+    -o /app/publish \
+    /p:UseAppHost=false
+
+
+# ---------- RUNTIME ----------
+FROM mcr.microsoft.com/dotnet/runtime:10.0-preview
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "InventoryManager.Worker.dll"]

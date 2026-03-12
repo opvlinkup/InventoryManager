@@ -12,9 +12,12 @@ public class OutboxIntegrationEventPublisher(InventoryManagerDbContext context) 
         var outboxMessage = new OutboxMessage
         {
             Id = integrationEvent.Id,
-            Type = integrationEvent.GetType().FullName!,
+            Type = integrationEvent.GetType().FullName ?? throw new InvalidOperationException("Integration event type is null."),
             Content = JsonSerializer.Serialize(integrationEvent),
-            OccurredOn = integrationEvent.OccurredOn
+            OccurredOn = integrationEvent.OccurredOn,
+            ProcessedOn = null,
+            Error = null,
+            ConfirmationToken = integrationEvent.ConfirmationToken,
         };
 
         await context.OutboxMessages.AddAsync(outboxMessage, ct);

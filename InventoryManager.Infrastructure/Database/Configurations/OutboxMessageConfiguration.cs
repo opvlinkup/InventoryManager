@@ -13,7 +13,9 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
         builder.Property(m => m.Type).HasMaxLength(256).IsRequired();
         builder.Property(m => m.Content).HasMaxLength(4000).IsRequired();
         builder.Property(m => m.OccurredOn).IsRequired();
-        builder.Property(m => m.ProcessedOn).IsRequired();
+        builder.Property(m => m.ProcessedOn).IsRequired(false);
+        builder.Property(m => m.Error).HasMaxLength(4000).IsRequired(false);
+        builder.Property(m => m.ConfirmationToken).HasMaxLength(4000).IsRequired(false);
         
         builder.HasIndex(m => m.ProcessedOn);
     }
