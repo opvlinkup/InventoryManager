@@ -36,7 +36,7 @@ public static class DependencyInjection
             .SetApplicationName("InventoryManager");
 
         services.AddDbContext<InventoryManagerDbContext>(options =>
-            options.UseNpgsql(configuration["DB_CONNECTION_LOCAL"]));
+            options.UseNpgsql(configuration["DB_CONNECTION"]));
 
         services.AddIdentityCore<User>(options =>
             {
