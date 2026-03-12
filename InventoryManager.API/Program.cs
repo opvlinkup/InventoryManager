@@ -32,18 +32,19 @@ builder.Configuration.AddEnvironmentVariables();
 
 var frontendUrl = builder.Configuration["AUDIENCE"] ?? throw new ArgumentNullException($"builder.Configuration[\"AUDIENCE\"]");
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-builder.WebHost.UseUrls($"https://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "7022";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 
 builder.Services.AddCors(options =>
     {
         options.AddPolicy(
             "DefaultCorsPolicy",
             policy =>
-                policy.WithOrigins(frontendUrl)
-                    .WithMethods("GET", "POST", "PATCH", "DELETE").
-                    AllowCredentials().
-                    AllowAnyHeader());
+                policy.SetIsOriginAllowed(_ => true)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
     }
 );
 
@@ -65,11 +66,11 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["ISSUER"],
-            ValidAudience = builder.Configuration["AUDIENCE"],
+            // ValidAudience = builder.Configuration["AUDIENCE"],
+            ValidateAudience = false,
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
             ClockSkew = TimeSpan.Zero
         };
