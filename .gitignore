@@ -46,8 +46,6 @@ wwwroot/node_modules/
 *.db
 *.db-journal
 
-# Entity Framework migrations (optional)
-Migrations/
 
 # NuGet
 *.nupkg
