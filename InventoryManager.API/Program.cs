@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 using InventoryManager.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 var root = Directory.GetCurrentDirectory();
 
@@ -86,13 +87,17 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<InventoryManagerDbContext>();
+
+    await context.Database.MigrateAsync();
+
     await DbInitializer.SeedRolesAndAdminAsync(services);
 }
-//test
+
 app.UseCors("DefaultCorsPolicy");
 
 app.UseAuthentication();
