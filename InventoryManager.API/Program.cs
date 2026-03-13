@@ -31,8 +31,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "7022";
-builder.WebHost.UseUrls($"http://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? builder.Configuration["PORT"];
+
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 builder.Services.AddCors(options =>
 {

@@ -24,7 +24,6 @@ RUN dotnet publish InventoryManager.API.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 
-ENV ASPNETCORE_URLS=http://+:${PORT}
 ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 
 COPY --from=build /app/publish .
