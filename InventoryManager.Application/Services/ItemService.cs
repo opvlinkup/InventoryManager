@@ -132,7 +132,7 @@ public sealed class ItemService(
 
     public async Task DeleteItemAsync(
         Guid itemId,
-        byte[] rowVersion,
+        uint rowVersion,
         Guid userId,
         CancellationToken ct)
     {

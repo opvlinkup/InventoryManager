@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InventoryManager.Domain.Models;
 
@@ -36,8 +37,10 @@ public class Item
     public string? Link1 { get; set; }
     public string? Link2 { get; set; }
     public string? Link3 { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
+    
+    [Column("xmin")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public uint RowVersion { get; set; }
     
     public long? Sequence { get; set; }
 

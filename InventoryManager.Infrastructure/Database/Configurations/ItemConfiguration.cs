@@ -28,7 +28,11 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
 
         builder.Property(x => x.CustomId).IsRequired().HasMaxLength(200);
         
-        builder.Property(x => x.RowVersion).IsRowVersion().IsConcurrencyToken();
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion()
+            .IsConcurrencyToken()
+            .ValueGeneratedOnAddOrUpdate()
+            .HasColumnName("xmin");
         
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();

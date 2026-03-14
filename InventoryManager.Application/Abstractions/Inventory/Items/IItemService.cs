@@ -8,7 +8,11 @@ public interface IItemService
 
     Task UpdateItemAsync(Guid itemId, UpdateItemDto dto, Guid userId, CancellationToken ct);
 
-    public Task DeleteItemAsync(Guid itemId, byte[] rowVersion, Guid userId, CancellationToken ct);
+    public Task DeleteItemAsync(
+        Guid itemId,
+        uint rowVersion,
+        Guid userId,
+        CancellationToken ct);
 
     public Task<List<ItemTableDto>> GetByInventoryAsync(Guid inventoryId, ItemFilterDto filter, CancellationToken ct);
 }

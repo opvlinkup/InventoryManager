@@ -12,7 +12,7 @@ public class ItemRepository(InventoryManagerDbContext context) : Repository<Item
         return await context.Items.AnyAsync(x => x.Id == itemId, ct);
     }
     
-    public async Task<Item?> GetForUpdateAsync(Guid id, byte[] rowVersion, CancellationToken ct)
+    public async Task<Item?> GetForUpdateAsync(Guid id, uint rowVersion, CancellationToken ct)
     {
         var entity = await context.Items.FirstOrDefaultAsync(i => i.Id == id, ct);
 

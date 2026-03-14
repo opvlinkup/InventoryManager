@@ -45,13 +45,16 @@ public sealed class ItemController(
 
     [Authorize]
     [HttpDelete("{itemId:guid}")]
-    public async Task<IActionResult> Delete(Guid itemId, [FromBody] byte[] rowVersion, CancellationToken ct)
+    public async Task<IActionResult> Delete(Guid itemId, [FromBody] long rowVersion, CancellationToken ct)
     {
+        if (rowVersion is < 0 or > uint.MaxValue)
+            return BadRequest("Invalid rowVersion value.");
+        
         try
         {
             await itemService.DeleteItemAsync(
                 itemId,
-                rowVersion,
+                (uint)rowVersion,
                 currentUser.UserId,
                 ct);
 

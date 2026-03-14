@@ -23,5 +23,5 @@ public sealed class UpdateItemDto
     public string? Link1 { get; set; }
     public string? Link2 { get; set; }
     public string? Link3 { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public uint RowVersion { get; set; }
 }
