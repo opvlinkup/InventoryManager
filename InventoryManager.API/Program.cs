@@ -99,7 +99,7 @@ using (var scope = app.Services.CreateScope())
 
     await context.Database.MigrateAsync();
 
-    await DbInitializer.SeedRolesAndAdminAsync(services);
+    await DbInitializer.SeedRolesAndAdminAsync(services, builder.Configuration);
 }
 
 app.UseCors("DefaultCorsPolicy");
