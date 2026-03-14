@@ -29,7 +29,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddDbContext<InventoryManagerDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["DB_CONNECTION_LOCAL"]));
+    options.UseNpgsql(builder.Configuration["DB_CONNECTION"]));
 
 builder.Services.AddHttpClient();
 
