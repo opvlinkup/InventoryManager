@@ -9,7 +9,7 @@ using DotNetEnv;
 using InventoryManager.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
-/*
+
 var root = Directory.GetCurrentDirectory();
 
 while (!File.Exists(Path.Combine(root, ".env")))
@@ -27,7 +27,7 @@ if (File.Exists(envFile))
 {
     Env.Load(envFile);
 }
-*/
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +53,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
+Console.WriteLine("ENV JWT_SEC_KEY = " + Environment.GetEnvironmentVariable("JWT_SEC_KEY"));
 
 var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
