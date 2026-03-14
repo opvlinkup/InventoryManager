@@ -8,5 +8,5 @@ public sealed class InventoryDetailsDto
     public Guid CategoryId { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsPublic { get; set; }
-    public byte[] RowVersion { get; set; } = default!;
+    public uint RowVersion { get; set; } = default!;
 }

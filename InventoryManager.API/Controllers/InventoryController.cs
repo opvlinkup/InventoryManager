@@ -128,7 +128,7 @@ public sealed class InventoryController(
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(
         Guid id,
-        [FromBody] byte[] rowVersion,
+        [FromBody] uint rowVersion,
         CancellationToken ct)
     {
         if (!currentUser.IsAuthenticated)

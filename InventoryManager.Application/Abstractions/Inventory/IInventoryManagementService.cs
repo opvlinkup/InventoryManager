@@ -4,20 +4,9 @@ namespace InventoryManager.Application.Abstractions.Inventory;
 
     public interface IInventoryManagementService
     {
-        Task<Guid> CreateInventoryAsync(
-            CreateInventoryDto dto,
-            Guid ownerId,
-            CancellationToken ct);
+        Task<Guid> CreateInventoryAsync(CreateInventoryDto dto, Guid ownerId, CancellationToken ct);
 
-        Task UpdateInventoryAsync(
-            Guid inventoryId,
-            UpdateInventoryDto dto,
-            Guid userId,
-            CancellationToken ct);
+        Task UpdateInventoryAsync(Guid inventoryId, UpdateInventoryDto dto, Guid userId, CancellationToken ct);
 
-        Task DeleteInventoryAsync(
-            Guid inventoryId,
-            Guid userId,
-            byte[] rowVersion,
-            CancellationToken ct);
+        public Task DeleteInventoryAsync(Guid inventoryId, Guid userId, uint rowVersion, CancellationToken ct);
     }

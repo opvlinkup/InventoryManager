@@ -80,7 +80,6 @@ public sealed class InventoryManagementService(
     public async Task UpdateInventoryAsync(Guid inventoryId, UpdateInventoryDto dto, Guid userId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        ArgumentNullException.ThrowIfNull(dto.RowVersion);
 
         await accessService.EnsureCanEditAsync(inventoryId, userId, ct);
 
@@ -97,10 +96,9 @@ public sealed class InventoryManagementService(
         inventory.UpdatedAt = DateTime.UtcNow;
     }
 
-    public async Task DeleteInventoryAsync(Guid inventoryId, Guid userId, byte[] rowVersion, CancellationToken ct)
+    public async Task DeleteInventoryAsync(Guid inventoryId, Guid userId, uint rowVersion, CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(rowVersion);
-
+        
         await accessService.EnsureCanEditAsync(inventoryId, userId, ct);
 
         var inventory = await unitOfWork.InventoryRepository

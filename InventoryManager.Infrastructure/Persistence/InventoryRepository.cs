@@ -10,7 +10,7 @@ public sealed class InventoryRepository(InventoryManagerDbContext context) : Rep
 {
     private readonly InventoryManagerDbContext _context = context;
 
-    public async Task<Inventory> GetForUpdateAsync(Guid id, byte[] rowVersion, CancellationToken ct)
+    public async Task<Inventory> GetForUpdateAsync(Guid id, uint rowVersion, CancellationToken ct)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Invalid id.", nameof(id));

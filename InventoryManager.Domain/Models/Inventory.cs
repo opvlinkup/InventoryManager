@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InventoryManager.Domain.Models;
 
@@ -30,8 +31,8 @@ public class Inventory
     [Required]
     public WriteAccessMode WriteAccessMode { get; set; } = WriteAccessMode.Restricted;
     
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = null!;
+    [Column("xmin")]
+    public uint RowVersion { get; set; }
 
     public ICollection<Item> Items { get; set; } = new List<Item>();
     public ICollection<InventoryWriteAccess> InventoryWriteAccesses { get; set; } = new List<InventoryWriteAccess>();

@@ -6,7 +6,7 @@ public interface IInventoryRepository : IRepository<Domain.Models.Inventory>
 {
    public Task<InventoryAccessSnapshot?> GetAccessSnapshotAsync(Guid inventoryId, CancellationToken ct);
 
-   public Task<Domain.Models.Inventory> GetForUpdateAsync(Guid id, byte[] rowVersion, CancellationToken ct);
+   public Task<Domain.Models.Inventory> GetForUpdateAsync(Guid id, uint rowVersion, CancellationToken ct);
    
    Task<InventoryDetailsDto?> GetDetailsAsync(Guid id, CancellationToken ct);
 

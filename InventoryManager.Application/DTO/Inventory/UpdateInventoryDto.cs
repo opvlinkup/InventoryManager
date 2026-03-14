@@ -8,5 +8,5 @@ public sealed class UpdateInventoryDto
     public bool IsPublic { get; set; }
     public WriteAccessMode WriteAccessMode { get; set; }
 
-    public byte[] RowVersion { get; set; } = default!;
+    public uint RowVersion { get; set; } = default!;
 }
