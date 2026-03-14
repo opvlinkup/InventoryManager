@@ -51,8 +51,8 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
-var authOptions = builder.Configuration.GetSection("AuthOptions");
-var key = authOptions["Key"] ?? throw new InvalidOperationException("AuthOptions:Key is required");
+
+var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
 builder.Services.AddAuthentication(options =>
 {
