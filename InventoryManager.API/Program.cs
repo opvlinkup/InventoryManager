@@ -9,6 +9,7 @@ using DotNetEnv;
 using InventoryManager.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
+/*
 var root = Directory.GetCurrentDirectory();
 
 while (!File.Exists(Path.Combine(root, ".env")))
@@ -26,6 +27,7 @@ if (File.Exists(envFile))
 {
     Env.Load(envFile);
 }
+*/
 
 var builder = WebApplication.CreateBuilder(args);
 
