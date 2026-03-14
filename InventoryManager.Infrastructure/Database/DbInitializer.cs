@@ -66,7 +66,7 @@ public static class DbInitializer
                    await db.Categories.AddAsync(category);
                 }
             }
-
+            await db.SaveChangesAsync();
         }
         catch(Exception ex)
         {
