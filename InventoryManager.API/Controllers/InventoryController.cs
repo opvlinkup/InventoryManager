@@ -83,9 +83,7 @@ public sealed class InventoryController(
 
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult<Guid>> Create(
-        [FromBody] CreateInventoryDto dto,
-        CancellationToken ct)
+    public async Task<ActionResult<Guid>> Create([FromBody] CreateInventoryDto dto, CancellationToken ct)
     {
         if (!currentUser.IsAuthenticated)
             return Unauthorized();

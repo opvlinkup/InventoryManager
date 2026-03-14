@@ -9,8 +9,6 @@ public sealed class CreateInventoryDto
     public string? ImageUrl { get; set; }
     public Guid CategoryId { get; set; }
     public bool IsPublic { get; set; }
-    
-    public WriteAccessMode WriteAccessMode { get; set; }
     public IReadOnlyList<CustomIdPartDto> CustomIdParts { get; set; } = [];
     public IReadOnlyList<FieldInitialMetadataDto> Fields { get; set; } = [];
     

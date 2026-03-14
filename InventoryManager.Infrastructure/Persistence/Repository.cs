@@ -99,7 +99,13 @@ public class Repository<T>(InventoryManagerDbContext context) : IRepository<T>
 
         await _dbSet.AddAsync(entity, cancellationToken);
     }
-
+    
+    public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(entities);
+        await _dbSet.AddRangeAsync(entities, cancellationToken);
+    }
+    
     public void Update(T entity)
     {
 

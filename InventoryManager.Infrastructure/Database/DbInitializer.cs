@@ -1,5 +1,6 @@
 ﻿using InventoryManager.Domain.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ public static class DbInitializer
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            var db = serviceProvider.GetRequiredService<InventoryManagerDbContext>();
 
     
             var roles = new[] { "User", "Admin" };
@@ -47,6 +49,24 @@ public static class DbInitializer
                     await userManager.AddToRoleAsync(admin, "Admin");
                 }
             }
+            
+            var predefinedCategories = new[]
+            {
+                new Category { Id = Guid.NewGuid(), Name = "Laptops" },
+                new Category { Id = Guid.NewGuid(), Name = "Desktops" },
+                new Category { Id = Guid.NewGuid(), Name = "Tablets" },
+                new Category { Id = Guid.NewGuid(), Name = "Books" },
+                new Category { Id = Guid.NewGuid(), Name = "Smartphones" }
+            };
+
+            foreach (var category in predefinedCategories)
+            {
+                if (!await db.Categories.AnyAsync(c => c.Name == category.Name))
+                {
+                   await db.Categories.AddAsync(category);
+                }
+            }
+
         }
         catch(Exception ex)
         {

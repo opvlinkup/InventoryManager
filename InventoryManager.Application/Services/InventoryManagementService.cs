@@ -29,13 +29,32 @@ public sealed class InventoryManagementService(
             CategoryId = dto.CategoryId,
             ImageUrl = dto.ImageUrl?.Trim(),
             IsPublic = dto.IsPublic,
-            WriteAccessMode = dto.WriteAccessMode,
+            WriteAccessMode = WriteAccessMode.OwnerOnly,
             CreatedAt = now,
             UpdatedAt = now
         };
-
-        await unitOfWork.InventoryRepository.AddAsync(inventory, ct);
         
+        
+        await unitOfWork.InventoryRepository.AddAsync(inventory, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        
+        var fieldDefinitions = dto.Fields
+            .OrderBy(f => f.Order)
+            .Select(f => new FieldMetadata
+            {
+                Id = Guid.NewGuid(),
+                InventoryId = inventory.Id,
+                Type = f.Type,
+                State = f.State,
+                Slot = f.Slot,
+                DisplayName = f.DisplayName.Trim(),
+                Tooltip = f.Tooltip?.Trim(),
+                ShowInUiTable = f.ShowInUiTable,
+                Order = f.Order
+            })
+            .ToList();
+
+        await unitOfWork.FieldMetadataRepository.AddRangeAsync(fieldDefinitions, ct);
         if (dto.CustomIdParts.Count > 0)
         {
             var customIdParts = dto.CustomIdParts
@@ -50,11 +69,9 @@ public sealed class InventoryManagementService(
                     Order = p.Order
                 })
                 .ToList();
-
-            foreach (var part in customIdParts)
-            {
-                await unitOfWork.CustomIdPartRepository.AddAsync(part, ct);
-            }
+            
+                await unitOfWork.CustomIdPartRepository.AddRangeAsync(customIdParts, ct);
+            
         }
         
         return inventory.Id;

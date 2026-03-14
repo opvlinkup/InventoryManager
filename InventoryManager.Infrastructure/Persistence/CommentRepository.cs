@@ -38,8 +38,8 @@ public sealed class CommentRepository(InventoryManagerDbContext context, IHubCon
             Content = content,
             CreatedAt = DateTime.UtcNow
         };
-
-        context.Set<Comment>().Add(comment);
+    
+        context.Comments.Add(comment);
 
         await context.SaveChangesAsync(ct);
 
