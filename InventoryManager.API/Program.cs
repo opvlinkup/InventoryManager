@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text;
+using System.Text.Json.Serialization;
 using InventoryManager.Application;
 using InventoryManager.Infrastructure;
 using InventoryManager.Infrastructure.Hubs;
@@ -52,7 +53,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
