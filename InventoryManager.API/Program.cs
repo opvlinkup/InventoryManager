@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using InventoryManager.Application;
 using InventoryManager.Infrastructure;
@@ -53,7 +54,14 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
-Console.WriteLine("ENV JWT_SEC_KEY = " + Environment.GetEnvironmentVariable("JWT_SEC_KEY"));
+Console.WriteLine("---- ENV DUMP ----");
+
+foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
+{
+    Console.WriteLine($"{env.Key}={env.Value}");
+}
+
+Console.WriteLine("------------------");
 
 var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
