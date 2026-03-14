@@ -24,10 +24,14 @@ public sealed class EmailService(
         var resendUrl =
             configuration["RESEND_API"]
             ?? "https://api.resend.com";
-
+            //temporary fallback to avoid breaking email sending for existing users until frontend is updated to include AUDIENCE variable
+   //     var frontendUrl =
+   //         configuration["AUDIENCE"]
+    //        ?? throw new InvalidOperationException("AUDIENCE missing");
+        
         var frontendUrl =
             configuration["AUDIENCE"]
-            ?? throw new InvalidOperationException("AUDIENCE missing");
+            ?? "";
         
         if (string.IsNullOrWhiteSpace(token))
             throw new ArgumentException("Confirmation token is missing");
