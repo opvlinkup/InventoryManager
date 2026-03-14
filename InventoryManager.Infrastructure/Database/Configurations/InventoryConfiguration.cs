@@ -54,9 +54,10 @@ public class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
 
 
         builder.Property(x => x.RowVersion)
-            .HasColumnName("xmin")
+            .IsRowVersion()
             .IsConcurrencyToken()
-            .ValueGeneratedOnAddOrUpdate();
+            .ValueGeneratedOnAddOrUpdate()
+            .HasColumnName("xmin");
         
         builder.Property(x => x.CreatedAt)
             .IsRequired();

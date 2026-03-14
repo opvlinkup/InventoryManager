@@ -32,6 +32,7 @@ public class Inventory
     public WriteAccessMode WriteAccessMode { get; set; } = WriteAccessMode.Restricted;
     
     [Column("xmin")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public uint RowVersion { get; set; }
 
     public ICollection<Item> Items { get; set; } = new List<Item>();
