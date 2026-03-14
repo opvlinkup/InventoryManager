@@ -54,15 +54,6 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
-Console.WriteLine("---- ENV DUMP ----");
-
-foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
-{
-    Console.WriteLine($"{env.Key}={env.Value}");
-}
-
-Console.WriteLine("------------------");
-
 var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
 builder.Services.AddAuthentication(options =>

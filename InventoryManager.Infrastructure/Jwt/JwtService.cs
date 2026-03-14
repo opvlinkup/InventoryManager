@@ -29,11 +29,12 @@ public sealed class JwtService : IJwtService
         
         var signingKey = configuration["JWT_SEC_KEY"];
         _issuer = configuration["ISSUER"] ?? throw new InvalidOperationException("JWT issuer is missing");
-        _audience = configuration["AUDIENCE"] ?? throw new InvalidOperationException("JWT audience is missing");
+        //currently disabled audience
+        _audience = configuration["AUDIENCE"] ?? "";
         _accessTokenMinutes = int.TryParse(configuration["JJWT_ACCESS_LIFETIME_MINUTES"], out var m) ? m : 5;
         _refreshTokenDays = int.TryParse(configuration["JWT_REFRESH_LIFETIME_DAYS"], out var d) ? d : 7;
 
-        // Проверка ключа
+
         if (string.IsNullOrWhiteSpace(signingKey))
             throw new InvalidOperationException("JWT signing key is missing");
 
@@ -43,8 +44,8 @@ public sealed class JwtService : IJwtService
         if (string.IsNullOrWhiteSpace(_issuer))
             throw new InvalidOperationException("JWT issuer is missing");
 
-        if (string.IsNullOrWhiteSpace(_audience))
-            throw new InvalidOperationException("JWT audience is missing");
+        // if (string.IsNullOrWhiteSpace(_audience))
+         //   throw new InvalidOperationException("JWT audience is missing");
 
         if (_accessTokenMinutes <= 0 || _accessTokenMinutes > 10)
             throw new InvalidOperationException("Access token lifetime is invalid");
