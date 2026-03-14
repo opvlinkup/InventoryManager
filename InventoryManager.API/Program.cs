@@ -31,7 +31,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? throw new InvalidOperationException("PORT environment variable is required");
+var port = builder.Configuration["PORT"] ?? throw new InvalidOperationException("PORT environment variable is required");
 
 if (!string.IsNullOrEmpty(port))
 {
@@ -52,7 +52,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
 
-var key = Environment.GetEnvironmentVariable("JWT_SEC_KEY") ?? throw new InvalidOperationException("JWT key is required");
+var key = builder.Configuration["JWT_SEC_KEY"] ?? throw new InvalidOperationException("JWT key is required");
 
 builder.Services.AddAuthentication(options =>
 {
