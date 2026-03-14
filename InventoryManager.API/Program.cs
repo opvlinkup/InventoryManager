@@ -103,7 +103,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors("DefaultCorsPolicy");
-
+app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<LastActivityMiddleware>();
 app.UseAuthorization();
