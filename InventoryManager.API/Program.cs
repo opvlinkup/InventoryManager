@@ -103,9 +103,22 @@ using (var scope = app.Services.CreateScope())
 
     var context = services.GetRequiredService<InventoryManagerDbContext>();
 
-    await context.Database.MigrateAsync();
-
-    await DbInitializer.SeedRolesAndAdminAsync(services, builder.Configuration);
+    var retries = 5;
+    while (retries > 0)
+    {
+        try
+        {
+            await context.Database.MigrateAsync();
+            await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider, builder.Configuration);
+            break;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Migration failed: {ex.Message}, retries left: {retries}");
+            retries--;
+            await Task.Delay(3000);
+        }
+    }
 }
 
 app.UseCors("DefaultCorsPolicy");
