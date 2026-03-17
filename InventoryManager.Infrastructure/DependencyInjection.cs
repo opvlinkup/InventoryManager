@@ -36,7 +36,35 @@ public static class DependencyInjection
             .SetApplicationName("InventoryManager");
 
         services.AddDbContext<InventoryManagerDbContext>(options =>
-            options.UseNpgsql(configuration["DB_CONNECTION"]));
+        {
+            var connectionString =
+                configuration["DB_CONNECTION"]
+                ?? configuration["DATABASE_URL"];
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("Connection string is not configured");
+
+            if (connectionString.StartsWith("postgres://"))
+            {
+                var uri = new Uri(connectionString);
+                var userInfo = uri.UserInfo.Split(':');
+
+                var builder = new Npgsql.NpgsqlConnectionStringBuilder
+                {
+                    Host = uri.Host,
+                    Port = uri.Port,
+                    Database = uri.AbsolutePath.Trim('/'),
+                    Username = userInfo[0],
+                    Password = userInfo[1],
+                    SslMode = Npgsql.SslMode.Require,
+                    TrustServerCertificate = true
+                };
+
+                connectionString = builder.ToString();
+            }
+
+            options.UseNpgsql(connectionString);
+        });
 
         services.AddIdentityCore<User>(options =>
             {
