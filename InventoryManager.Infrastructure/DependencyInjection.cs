@@ -2,6 +2,7 @@
 using InventoryManager.Application.Abstractions.Auth;
 using InventoryManager.Application.Abstractions.Email;
 using InventoryManager.Application.Abstractions.Identity;
+using InventoryManager.Application.Abstractions.Integration;
 using InventoryManager.Application.Abstractions.Jwt;
 using InventoryManager.Application.Abstractions.Messaging;
 using InventoryManager.Application.Abstractions.Persistence;
@@ -13,6 +14,8 @@ using InventoryManager.Domain.Models;
 using InventoryManager.Infrastructure.Database;
 using InventoryManager.Infrastructure.Email;
 using InventoryManager.Infrastructure.Identity;
+using InventoryManager.Infrastructure.Integration.Salesforce;
+using InventoryManager.Infrastructure.Integration.Salesforce.Options;
 using InventoryManager.Infrastructure.Jwt;
 using InventoryManager.Infrastructure.Messaging;
 using InventoryManager.Infrastructure.Persistence;
@@ -107,12 +110,16 @@ public static class DependencyInjection
         services.AddScoped<IHashingService, HashingService>();
         services.AddScoped<IIntegrationEventPublisher, OutboxIntegrationEventPublisher>();
         services.AddScoped<ICookieService, CookieService>();
+        services.AddScoped<ISalesforceService, SalesforceService>();
         
         services.AddSignalR();
         services.AddHttpClient();
         services.AddScoped<IEmailService, EmailService>();
 
-
+        services.Configure<SalesforceOptions>(
+            configuration.GetSection("Salesforce")
+        );
+        
         return services;
     }
 }

@@ -10,10 +10,7 @@ namespace InventoryManager.API.Controllers;
 
 [ApiController]
 [Route("api/items")]
-public sealed class ItemController(
-    IItemService itemService,
-    ILikeService likeService,
-    ICurrentUserService currentUser
+public sealed class ItemController(IItemService itemService, ILikeService likeService, ICurrentUserService currentUser
 ) : ControllerBase
 {
     [Authorize]

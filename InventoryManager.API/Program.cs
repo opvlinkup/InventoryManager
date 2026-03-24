@@ -37,19 +37,41 @@ builder.Configuration.AddEnvironmentVariables();
 
 var port = builder.Configuration["PORT"] ?? throw new InvalidOperationException("PORT environment variable is required");
 
-if (!string.IsNullOrEmpty(port))
+bool isLocal = builder.Environment.IsDevelopment();
+
+if (isLocal)
+{
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenLocalhost(port: int.Parse(port), listenOptions =>
+        {
+            listenOptions.UseHttps();
+        });
+    });
+    Console.WriteLine($"Local host runs on port {port}");
+    
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("LocalCorsPolicy", policy =>
+            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+    });
+}
+else
 {
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    Console.WriteLine($"Prod runs on port {port}");
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("ProdCorsPolicy", policy =>
+            policy.SetIsOriginAllowed(_ => true)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+    });
 }
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("DefaultCorsPolicy", policy =>
-        policy.SetIsOriginAllowed(_ => true)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
-});
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -103,7 +125,7 @@ using (var scope = app.Services.CreateScope())
 
     var context = services.GetRequiredService<InventoryManagerDbContext>();
 
-    var retries = 5;
+    var retries = 2;
     while (retries > 0)
     {
         try
@@ -121,7 +143,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.UseCors("DefaultCorsPolicy");
+app.UseCors(isLocal ? "LocalCorsPolicy" : "ProdCorsPolicy");
 app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<LastActivityMiddleware>();

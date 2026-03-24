@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManager.Infrastructure.Persistence;
 
-public class Repository<T>(InventoryManagerDbContext context) : IRepository<T>
-    where T : class
+public class Repository<T>(InventoryManagerDbContext context) : IRepository<T> where T : class
 {
     
     private readonly InventoryManagerDbContext _dbContext =
