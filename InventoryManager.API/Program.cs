@@ -146,6 +146,7 @@ using (var scope = app.Services.CreateScope())
 app.UseCors(isLocal ? "LocalCorsPolicy" : "ProdCorsPolicy");
 app.UseRouting();
 app.UseAuthentication();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<LastActivityMiddleware>();
 app.UseAuthorization();
 app.UseMiddleware<TransactionMiddleware>();

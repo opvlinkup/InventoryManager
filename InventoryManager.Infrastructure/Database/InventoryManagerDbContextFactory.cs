@@ -1,29 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace InventoryManager.Infrastructure.Database;
 
-public sealed class InventoryManagerDbContextFactory : IDesignTimeDbContextFactory<InventoryManagerDbContext>
+public sealed class InventoryManagerDbContextFactory 
+    : IDesignTimeDbContextFactory<InventoryManagerDbContext>
 {
     public InventoryManagerDbContext CreateDbContext(string[] args)
     {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "../InventoryManager.API");
-        
-        if (!Directory.Exists(path))
-            path = Directory.GetCurrentDirectory();
+        var basePath = Path.Combine(Directory.GetCurrentDirectory(),"..");
 
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile(Path.Combine(path, "appsettings.json"), optional: false)
-            .AddEnvironmentVariables()
-            .Build();
-        
-        var connectionString = configuration["DB_CONNECTION_LOCAL"] 
-            ?? configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string not found. Set DB_CONNECTION environment variable or DefaultConnection in appsettings.json");
+        var envPath = Path.Combine(basePath, ".env");
+
+        if (!File.Exists(envPath))
+            throw new InvalidOperationException($".env file not found at: {envPath}");
+
+        Env.Load(envPath);
+
+        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_LOCAL");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException(
+                "Environment variable 'DB_CONNECTION_LOCAL' is not set or empty."
+            );
 
         var optionsBuilder = new DbContextOptionsBuilder<InventoryManagerDbContext>();
-
         optionsBuilder.UseNpgsql(connectionString);
 
         return new InventoryManagerDbContext(optionsBuilder.Options);

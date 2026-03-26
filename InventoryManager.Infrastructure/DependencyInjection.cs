@@ -14,6 +14,7 @@ using InventoryManager.Domain.Models;
 using InventoryManager.Infrastructure.Database;
 using InventoryManager.Infrastructure.Email;
 using InventoryManager.Infrastructure.Identity;
+using InventoryManager.Infrastructure.Integration.Odoo;
 using InventoryManager.Infrastructure.Integration.Salesforce;
 using InventoryManager.Infrastructure.Integration.Salesforce.Options;
 using InventoryManager.Infrastructure.Jwt;
@@ -111,6 +112,7 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationEventPublisher, OutboxIntegrationEventPublisher>();
         services.AddScoped<ICookieService, CookieService>();
         services.AddScoped<ISalesforceService, SalesforceService>();
+        services.AddScoped<IOdooService, OdooService>();
         
         services.AddSignalR();
         services.AddHttpClient();

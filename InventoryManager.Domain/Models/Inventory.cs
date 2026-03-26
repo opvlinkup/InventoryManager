@@ -27,6 +27,8 @@ public class Inventory
     
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
+    [MaxLength(2048)]
+    public string? ApiToken { get; set; } = null!;
     
     [Required]
     public WriteAccessMode WriteAccessMode { get; set; } = WriteAccessMode.Restricted;

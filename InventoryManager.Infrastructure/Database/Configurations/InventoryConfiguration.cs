@@ -51,6 +51,9 @@ public class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
         builder.Property(x => x.WriteAccessMode)
             .IsRequired()
             .HasConversion<int>();
+        
+        builder.Property(x => x.ApiToken)
+            .HasMaxLength(2048);
 
 
         builder.Property(x => x.RowVersion)

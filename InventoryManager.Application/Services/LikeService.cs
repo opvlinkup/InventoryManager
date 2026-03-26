@@ -1,5 +1,4 @@
-﻿using InventoryManager.Application.Abstractions.Inventory;
-using InventoryManager.Application.Abstractions.Persistence;
+﻿using InventoryManager.Application.Abstractions.Inventory.Likes;
 using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Domain.Models;
 using Microsoft.EntityFrameworkCore;

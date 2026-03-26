@@ -18,15 +18,15 @@ public sealed class ItemService(
     ICustomIdValidator customIdValidator
 ) : IItemService
 {
-    public async Task<Guid> CreateItemAsync(Guid inventoryId, ItemDraftDto dto, Guid userId, CancellationToken ct)
+    public async Task<Guid> CreateItemAsync(ItemDraftDto dto, Guid userId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        await accessService.EnsureCanEditAsync(inventoryId, userId, ct);
+        await accessService.EnsureCanEditAsync(dto.InventoryId, userId, ct);
 
-        await templateService.ValidateItemAgainstTemplateAsync(inventoryId, dto, ct);
+        await templateService.ValidateItemAgainstTemplateAsync(dto.InventoryId, dto, ct);
         
-        var (customId, sequence) = await customIdGenerator.GenerateAsync(inventoryId, ct);
+        var (customId, sequence) = await customIdGenerator.GenerateAsync(dto.InventoryId, ct);
         
         var now = DateTime.UtcNow;
 
@@ -35,7 +35,7 @@ public sealed class ItemService(
             Id = Guid.NewGuid(),
             CustomId = customId,
             Sequence = sequence,
-            InventoryId = inventoryId,
+            InventoryId = dto.InventoryId,
             CreatedById = userId,
             CreatedAt = now,
             UpdatedAt = now,
@@ -66,11 +66,7 @@ public sealed class ItemService(
         return item.Id;
     }
 
-    public async Task UpdateItemAsync(
-        Guid itemId,
-        UpdateItemDto dto,
-        Guid userId,
-        CancellationToken ct)
+    public async Task UpdateItemAsync(Guid itemId, UpdateItemDto dto, Guid userId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 

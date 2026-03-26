@@ -153,18 +153,7 @@ public sealed class InventoryController(
             return NotFound();
         }
     }
-
-    [Authorize]
-    [HttpPost("{inventoryId:guid}/items")]
-    public async Task<ActionResult<Guid>> CreateItem(
-        Guid inventoryId,
-        [FromBody] ItemDraftDto dto,
-        CancellationToken ct)
-    {
-        var id = await itemService.CreateItemAsync(inventoryId, dto, currentUser.UserId, ct);
-
-        return Created($"/api/items/{id}", id);
-    }
+    
 
     [HttpGet("{inventoryId:guid}/items")]
     public async Task<ActionResult<List<ItemTableDto>>> GetItems(Guid inventoryId, [FromQuery] ItemFilterDto filter, CancellationToken ct)

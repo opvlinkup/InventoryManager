@@ -10,9 +10,31 @@ namespace InventoryManager.API.Controllers;
 
 [ApiController]
 [Route("api/items")]
-public sealed class ItemController(IItemService itemService, ILikeService likeService, ICurrentUserService currentUser
-) : ControllerBase
+public sealed class ItemController(IItemService itemService, ILikeService likeService, ICurrentUserService currentUser ) : ControllerBase
 {
+    [Authorize]
+    [HttpPost]
+    public async Task<ActionResult<Guid>> Create([FromBody] ItemDraftDto itemDraftDto, CancellationToken ct)
+    {
+        if (!currentUser.IsAuthenticated)
+            return Unauthorized();
+
+        try
+        {
+            var itemId = await itemService.CreateItemAsync( itemDraftDto, currentUser.UserId, ct);
+
+            return Created($"/api/items/{itemId}", new { id = itemId });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+    
     [Authorize]
     [HttpPut("{itemId:guid}")]
     public async Task<IActionResult> Update(Guid itemId, [FromBody] UpdateItemDto dto, CancellationToken ct)

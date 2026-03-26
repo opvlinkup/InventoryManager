@@ -4,7 +4,7 @@ namespace InventoryManager.Application.Abstractions.Inventory.Items;
 
 public interface IItemService
 {
-    Task<Guid> CreateItemAsync(Guid inventoryId, ItemDraftDto draftDto, Guid userId, CancellationToken ct);
+    Task<Guid> CreateItemAsync(ItemDraftDto draftDto, Guid userId, CancellationToken ct);
 
     Task UpdateItemAsync(Guid itemId, UpdateItemDto dto, Guid userId, CancellationToken ct);
 

@@ -3,5 +3,6 @@
 public sealed class ExternalInventoryDto
 {
     public string Title { get; set; } = null!;
-    List<ExternalItemDto> Items { get; set; } = null!;  
+    public List<ExternalItemDto> Items { get; set; } = null!;  
+    public List<ExternalFieldStatisticsDto> Stats { get; set; } = new();
 }
