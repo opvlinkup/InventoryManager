@@ -71,10 +71,25 @@ public sealed class OdooService(IUnitOfWork unitOfWork, IFieldMetadataService fi
                     fieldStats.TopValues = GetTopValues(values);
                     break;
                 }
+                
+                case FieldType.Link:
+                {
+                    var domains = items
+                        .Select(i => fieldMetadataService.GetItemFieldValue(i, field))
+                        .OfType<FieldValue.TextValue>()
+                        .Where(v => !string.IsNullOrWhiteSpace(v.Value))
+                        .Select(v => ExtractDomain(v.Value!))
+                        .Where(d => d != null)
+                        .Select(d => d!)
+                        .ToList();
+
+                    fieldStats.TopValues = GetTopValues(domains);
+                    break;
+                }
+                
 
                 case FieldType.Text:
                 case FieldType.LongText:
-                case FieldType.Link:
                 default:
                 {
                     var values = items
@@ -111,5 +126,21 @@ public sealed class OdooService(IUnitOfWork unitOfWork, IFieldMetadataService fi
             .OrderByDescending(x => x.Count)
             .Take(5)
             .ToList();
+    }
+    
+    private static string? ExtractDomain(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return null;
+
+        try
+        {
+            var uri = new Uri(url.Trim());
+            return uri.Host.ToLowerInvariant();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
