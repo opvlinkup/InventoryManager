@@ -4,5 +4,5 @@ namespace InventoryManager.Application.Abstractions.Integration;
 
 public interface IOdooService
 {
-    Task<ExternalInventoryDto> GetAggregatedDataAsync(string token, CancellationToken ct);
+    Task<ExportInventoryDto> GetAggregatedDataAsync(string token, CancellationToken ct);
 }

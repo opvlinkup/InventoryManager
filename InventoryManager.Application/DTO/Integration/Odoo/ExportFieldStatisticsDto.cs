@@ -1,6 +1,6 @@
 ﻿namespace InventoryManager.Application.DTO.Integration.Odoo;
 
-public sealed class ExternalFieldStatisticsDto
+public sealed class ExportFieldStatisticsDto
 {
     public string FieldName { get; set; } = null!;
     public string FieldType { get; set; } = null!;

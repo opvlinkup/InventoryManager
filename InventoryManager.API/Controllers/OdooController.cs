@@ -9,7 +9,7 @@ namespace InventoryManager.Controllers;
 public sealed class OdooController(IOdooService service) : ControllerBase
 {
     [HttpPost("import")]
-    public async Task<ActionResult<ExternalInventoryDto>> Import([FromBody] OdooRequestDto dto, CancellationToken ct)
+    public async Task<ActionResult<ExportInventoryDto>> Import([FromBody] OdooRequestDto dto, CancellationToken ct)
     {
         try
         {
