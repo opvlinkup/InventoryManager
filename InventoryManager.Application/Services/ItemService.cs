@@ -5,6 +5,7 @@ using InventoryManager.Application.Abstractions.Persistence.UnitOfWork;
 using InventoryManager.Application.Abstractions.Security;
 using InventoryManager.Application.Abstractions.Validators;
 using InventoryManager.Application.DTO.Item;
+using InventoryManager.Application.Helpers.Item;
 using InventoryManager.Domain.Models;
 
 namespace InventoryManager.Application.Services;
@@ -76,52 +77,59 @@ public sealed class ItemService(
 
         await accessService.EnsureCanEditAsync(item.InventoryId, userId, ct);
         
-        await customIdValidator.ValidateAsync(item.InventoryId, dto.CustomId, ct);
+     
+        if (dto.CustomId != null)
+        {
+            await customIdValidator.ValidateAsync(item.InventoryId, dto.CustomId, ct);
+            item.CustomId = dto.CustomId;
+        }
+
         
         var validationDraft = new ItemDraftDto
         {
-            Text1 = dto.Text1,
-            Text2 = dto.Text2,
-            Text3 = dto.Text3,
+            Text1 = dto.Text1 ?? item.Text1,
+            Text2 = dto.Text2 ?? item.Text2,
+            Text3 = dto.Text3 ?? item.Text3,
 
-            LongText1 = dto.LongText1,
-            LongText2 = dto.LongText2,
-            LongText3 = dto.LongText3,
+            LongText1 = dto.LongText1 ?? item.LongText1,
+            LongText2 = dto.LongText2 ?? item.LongText2,
+            LongText3 = dto.LongText3 ?? item.LongText3,
 
-            Number1 = dto.Number1,
-            Number2 = dto.Number2,
-            Number3 = dto.Number3,
+            Number1 = dto.Number1 ?? item.Number1,
+            Number2 = dto.Number2 ?? item.Number2,
+            Number3 = dto.Number3 ?? item.Number3,
 
-            Bool1 = dto.Bool1,
-            Bool2 = dto.Bool2,
-            Bool3 = dto.Bool3,
+            Bool1 = dto.Bool1 ?? item.Bool1,
+            Bool2 = dto.Bool2 ?? item.Bool2,
+            Bool3 = dto.Bool3 ?? item.Bool3,
 
-            Link1 = dto.Link1,
-            Link2 = dto.Link2,
-            Link3 = dto.Link3
+            Link1 = dto.Link1 ?? item.Link1,
+            Link2 = dto.Link2 ?? item.Link2,
+            Link3 = dto.Link3 ?? item.Link3
         };
+
 
         await templateService.ValidateItemAgainstTemplateAsync(item.InventoryId, validationDraft, ct);
 
-        item.Text1 = dto.Text1?.Trim();
-        item.Text2 = dto.Text2?.Trim();
-        item.Text3 = dto.Text3?.Trim();
+        item.Text1 = PatchHelper.IfNotNull(item.Text1, dto.Text1, x => x.Trim());
+        item.Text2 = PatchHelper.IfNotNull(item.Text2, dto.Text2, x => x.Trim());
+        item.Text3 = PatchHelper.IfNotNull(item.Text3, dto.Text3, x => x.Trim());
 
-        item.LongText1 = dto.LongText1?.Trim();
-        item.LongText2 = dto.LongText2?.Trim();
-        item.LongText3 = dto.LongText3?.Trim();
+        item.LongText1 = PatchHelper.IfNotNull(item.LongText1, dto.LongText1, x => x.Trim());
+        item.LongText2 = PatchHelper.IfNotNull(item.LongText2, dto.LongText2, x => x.Trim());
+        item.LongText3 = PatchHelper.IfNotNull(item.LongText3, dto.LongText3, x => x.Trim());
 
-        item.Number1 = dto.Number1;
-        item.Number2 = dto.Number2;
-        item.Number3 = dto.Number3;
+        item.Number1 = PatchHelper.IfHasValue(item.Number1, dto.Number1);
+        item.Number2 = PatchHelper.IfHasValue(item.Number2, dto.Number2);
+        item.Number3 = PatchHelper.IfHasValue(item.Number3, dto.Number3);
 
-        item.Bool1 = dto.Bool1;
-        item.Bool2 = dto.Bool2;
-        item.Bool3 = dto.Bool3;
+        item.Bool1 = PatchHelper.IfHasValue(item.Bool1, dto.Bool1);
+        item.Bool2 = PatchHelper.IfHasValue(item.Bool2, dto.Bool2);
+        item.Bool3 = PatchHelper.IfHasValue(item.Bool3, dto.Bool3);
 
-        item.Link1 = dto.Link1?.Trim();
-        item.Link2 = dto.Link2?.Trim();
-        item.Link3 = dto.Link3?.Trim();
+        item.Link1 = PatchHelper.IfNotNull(item.Link1, dto.Link1, x => x.Trim());
+        item.Link2 = PatchHelper.IfNotNull(item.Link2, dto.Link2, x => x.Trim());
+        item.Link3 = PatchHelper.IfNotNull(item.Link3, dto.Link3, x => x.Trim());
 
         item.UpdatedAt = DateTime.UtcNow;
     }

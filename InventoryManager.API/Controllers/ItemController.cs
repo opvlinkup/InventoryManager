@@ -36,7 +36,7 @@ public sealed class ItemController(IItemService itemService, ILikeService likeSe
     }
     
     [Authorize]
-    [HttpPut("{itemId:guid}")]
+    [HttpPatch("{itemId:guid}")]
     public async Task<IActionResult> Update(Guid itemId, [FromBody] UpdateItemDto dto, CancellationToken ct)
     {
         try

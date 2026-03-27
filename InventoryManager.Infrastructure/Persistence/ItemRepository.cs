@@ -23,6 +23,7 @@ public class ItemRepository(InventoryManagerDbContext context) : Repository<Item
 
         return entity;
     }
+    
     public async Task<List<Item>> GetByInventoryIdAsync(Guid inventoryId, CancellationToken ct)
     {
         return await context.Items.Where(x => x.InventoryId == inventoryId).AsNoTracking().ToListAsync(ct);
