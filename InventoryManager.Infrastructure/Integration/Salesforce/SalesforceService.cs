@@ -20,26 +20,49 @@ public class SalesforceService(HttpClient httpClient, IOptions<SalesforceOptions
     : ISalesforceService
 {
     private readonly SalesforceOptions _options = options.Value;
+    
+    private const string ApiBasePath = "/services/data/v66.0/sobjects";
 
     private string? _accessToken;
     private string? _instanceUrl;
     private DateTime _tokenExpiration;
+    
+    private readonly SemaphoreSlim _authLock = new(1, 1);
 
     public async Task<string> CreateCustomerAsync(SalesforceCustomerDto dto, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(_accessToken) || DateTime.UtcNow >= _tokenExpiration)
-        {
-            await AuthenticateAsync(ct);
-        }
+        await EnsureAuthenticatedAsync(ct);
 
         var accountId = await CreateAccountAsync(dto.CompanyName, ct);
         var contactId = await CreateContactAsync(dto, accountId, ct);
 
         return contactId;
     }
+    
+    private async Task EnsureAuthenticatedAsync(CancellationToken ct)
+    {
+        if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpiration)
+            return;
+
+        await _authLock.WaitAsync(ct); 
+        
+        try
+        {
+            if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpiration)
+                return;
+
+            await AuthenticateAsync(ct);
+        }
+        finally
+        {
+            _authLock.Release();
+        }
+    }
 
     private async Task AuthenticateAsync(CancellationToken ct)
     {
+        logger.LogInformation("Authenticating with Salesforce...");
+        
         var jwt = GenerateJwt();
 
         var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenEndpoint)
@@ -70,10 +93,10 @@ public class SalesforceService(HttpClient httpClient, IOptions<SalesforceOptions
 
     private string GenerateJwt()
     {
-        var normlizedSecretKey = _options.PrivateKey.Replace("\\n", "\n").Trim('"');
+        var normalizedSecretKey = _options.PrivateKey.Replace("\\n", "\n").Trim('"');
         
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(normlizedSecretKey);
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(normalizedSecretKey);
 
         var securityKey = new RsaSecurityKey(rsa);
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
@@ -97,7 +120,7 @@ public class SalesforceService(HttpClient httpClient, IOptions<SalesforceOptions
 
     private async Task<string> CreateAccountAsync(string companyName, CancellationToken ct)
     {
-        var url = $"{_instanceUrl}/services/data/v66.0/sobjects/Account";
+        var url = $"{_instanceUrl}{ApiBasePath}/Account";
 
      
         var request = new HttpRequestMessage(HttpMethod.Post, url)
@@ -124,7 +147,7 @@ public class SalesforceService(HttpClient httpClient, IOptions<SalesforceOptions
 
     private async Task<string> CreateContactAsync(SalesforceCustomerDto dto, string accountId, CancellationToken ct)
     {
-        var url = $"{_instanceUrl}/services/data/v66.0/sobjects/Contact";
+        var url = $"{_instanceUrl}{ApiBasePath}/Contact";
 
         var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
